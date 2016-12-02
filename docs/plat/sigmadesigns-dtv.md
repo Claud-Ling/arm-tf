@@ -25,7 +25,7 @@ How to build
 ------------
 
 'CROSS_COMPILE=<path-to-aarch64-gcc>/bin/aarch64-linux-gnu make PLAT=<soc e.g. union> \
-SPD=<dispatcher e.g. tspd> BL32=<path-to-u-boot.bin> bl1 fip'
+SPD=<dispatcher e.g. tspd> BL33=<path-to-u-boot.bin> bl1 fip'
 
 Build flags
 -------------
