@@ -43,7 +43,15 @@
 	 * checks
 	 * ---------------------------------------------------------------------
 	 */
+	/*
+	 * @SD patch: lock off I cache in case boot from NOR flash
+	 * This is due to NOR flash doesn't support burst access mode for now.
+	 */
+#if defined(SD_BOOTDEV) && (SD_BOOTDEV == SD_FLASH_NOR)
+	mov	x1, #(SCTLR_A_BIT | SCTLR_SA_BIT)
+#else
 	mov	x1, #(SCTLR_I_BIT | SCTLR_A_BIT | SCTLR_SA_BIT)
+#endif
 	mrs	x0, sctlr_el3
 	orr	x0, x0, x1
 	msr	sctlr_el3, x0

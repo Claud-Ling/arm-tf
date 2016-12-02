@@ -1,0 +1,40 @@
+#
+# DCS Descriptor File (DCSD)
+# Syntax:
+# <type> <name> <id> <...>
+#
+# For now, <type> can only be one of initor|target
+#
+# Initiator Section Syntax:
+# initor <name> <initid> [comments]
+# 
+# <initid> shall be present in decimal
+#
+initor	CSDAP		 0  #Coresight DAP
+initor	ARM_SR		 1  #A53 Secure Read
+initor	ARM_SW		 2  #A53 Secure Write
+initor	ARM_NSA		 3  #A53 Non-secure Access
+initor	I2CS		 4  #I2C Slave
+initor	AVMIPS		 5
+initor	HEVC		 6
+initor	DISPMIPS	 7
+initor	STB		 8  #Standby MCU
+initor	JTAG		 9  #JTAG MMIO
+initor	ADSP		10
+
+#
+# Target Section describes the targets list for each DCS
+# Target Section Syntax:
+# target <name> <target_id> <dcs> [comments]
+#
+# <target_id> shall be present in decimal
+# <dcs> can only be one of plf|av|disp
+#
+# DCS PLF
+target	PMAN_SEC0	 4 plf
+
+# DCS AV
+target	TURING		15 av
+
+# DCS DISP
+target	Bridge_to_AV	 0 disp
