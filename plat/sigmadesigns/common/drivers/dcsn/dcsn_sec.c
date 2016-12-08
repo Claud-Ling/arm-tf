@@ -33,6 +33,7 @@ void sd_dcsn_set_protections(void)
 #if PMAN_SEC_GROUP_MAX > 2
 	dcs_target_access_pman_sec2 = DCSN_SEC_ARM_SEC;
 #endif
+	dcs_target_access_sec_timer = DCSN_SEC_ARM_SEC;
 }
 
 void sd_dcsn_drop_protections(void)
@@ -47,5 +48,6 @@ void sd_dcsn_drop_protections(void)
 #if PMAN_SEC_GROUP_MAX > 2
 	dcs_target_access_pman_sec2 = DCSN_SEC_EVERYBODY;
 #endif
+	dcs_target_access_sec_timer = DCSN_SEC_EVERYBODY;
 }
 

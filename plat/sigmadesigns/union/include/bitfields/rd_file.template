@@ -1,10 +1,25 @@
 #
 # Register Descriptor file (RD file, in *.rd) Template
 #
-# Generally, RD file is used to describe 32-bit long register,
+# Generally, RD file is used to describe register,
 # and each line of it represents a bit field in that register.
 #
 # Syntax:
+# Configure line, optional
+# <key> <val> [comments]
+#
+# where,
+#   <key>      specifies key name.
+#              for now it can only be string of:
+#                  "type"      - specify register type, default 32-bit
+#   <val>      specifies value for the specified key.
+#              when <key> = "type", allowed value and its meaning are:
+#                  'b' or 'B'  - byte (8-bit)
+#                  'h' or 'H'  - halfword (16-bit)
+#                  'w' or 'W'  - word (32-bit)
+#                  'q' or 'Q'  - quadword (64-bit)
+#
+# Bitfield line
 # <name>  <start>  <bits> [comments]
 #
 # where,

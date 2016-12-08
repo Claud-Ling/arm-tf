@@ -49,6 +49,7 @@
 #define EMMC_BLOCK_MASK		(EMMC_BLOCK_SIZE - 1)
 
 #define FLASH_BLOCK_SIZE 	EMMC_BLOCK_SIZE
+#define FLASH_BOOT_SIZE		SD_MMC_BOOT_SIZE
 
 int sd_emmc_init(void);
 void sd_emmc_deinit(void);
@@ -90,8 +91,8 @@ size_t emmc_rpmb_write_blocks(int lba, const uintptr_t buf, size_t size);
 
 #elif (SD_STORAGE == SD_FLASH_NAND) /*(SD_STORAGE == SD_FLASH_MMC)*/
 
-# define FLASH_BLOCK_SIZE	2048	/* force 2kB (logical block for now)
-					 */
+#define FLASH_BLOCK_SIZE	2048		/* force 2kB (logical block for now) */
+#define FLASH_BOOT_SIZE		0x8000000	/* 128M on top shall be enough for boot */
 
 int sd_nand_init(void);
 void sd_nand_deinit(void);
@@ -110,6 +111,7 @@ size_t sd_nand_read(int lba, uintptr_t buf, size_t size);
 #elif (SD_STORAGE == SD_FLASH_NOR)	/*(SD_STORAGE == SD_FLASH_NAND)*/
 
 #define FLASH_BLOCK_SIZE	512
+#define FLASH_BOOT_SIZE		0x100000 	/*just assume 1M*/
 
 int sd_nor_init(void);
 void sd_nor_deinit(void);
@@ -154,6 +156,31 @@ size_t sd_flash_read_blocks(int lba, uintptr_t buf, size_t size);
  *	return bytes of write data on success, otherwise error code (<0)
  */
 size_t sd_flash_write_blocks(int lba, const uintptr_t buf, size_t size);
+
+/*
+ * read data from flash boot partition
+ * fall back to normall partition in case none boot part ops is provided, i.e. NAND
+ * In:
+ *	lba	- the least block address
+ *	buf	- pointer of buffer to load read data, block_size aligned
+ *	size	- bytes of data to read, block size aligned
+ * Out:
+ *	return bytes of read data on success, otherwise error code (<0)
+ */
+size_t sd_flash_boot_read_blocks(int lba, uintptr_t buf, size_t size);
+
+/*
+ * write data to flash boot partition
+ * fall back to normall partition in case none boot part is provided, i.e. NAND
+ * In:
+ *	lba	- the least block address
+ *	buf	- pointer of buffer, block_size aligned
+ *	size	- bytes of data to write, block size aligned
+ * Out:
+ *	return bytes of write data on success, otherwise error code (<0)
+ */
+size_t sd_flash_boot_write_blocks(int lba, const uintptr_t buf, size_t size);
+
 #endif /*__ASSEMBLY__*/
 
 #endif /*__SD_FLASH_H__*/

@@ -77,6 +77,26 @@ static const io_block_dev_spec_t flash_dev_spec = {
 	.block_size	= FLASH_BLOCK_SIZE,
 };
 
+static uintptr_t flash_boot_dev_handle;
+
+static const io_block_spec_t flash_boot_spec = {
+	.offset		= 0,
+	.length		= FLASH_BOOT_SIZE,
+};
+
+static const io_block_dev_spec_t flash_boot_dev_spec = {
+	/* It's used as temp buffer in block driver. */
+	.buffer		= {
+		.offset	= SD_FLASH_DATA_BASE,
+		.length	= SD_FLASH_DATA_SIZE,
+	},
+	.ops		= {
+		.read	= sd_flash_boot_read_blocks,
+		.write	= sd_flash_boot_write_blocks,
+	},
+	.block_size	= FLASH_BLOCK_SIZE,
+};
+
 static const io_uuid_spec_t bl2_uuid_spec = {
 	.uuid = UUID_TRUSTED_BOOT_FIRMWARE_BL2,
 };
@@ -179,6 +199,10 @@ void sd_io_setup(void)
 	result = io_dev_open(fip_dev_con, (uintptr_t)NULL, &fip_dev_handle);
 	assert(result == 0);
 
+	result = io_dev_open(flash_dev_con, (uintptr_t)&flash_boot_dev_spec,
+			     &flash_boot_dev_handle);
+	assert(result == 0);
+
 	/* Ignore improbable errors in release builds */
 	(void)result;
 }
@@ -205,3 +229,66 @@ int plat_get_image_source(unsigned int image_id, uintptr_t *dev_handle,
 	return result;
 }
 
+/*******************************************************************************
+ * Generic function to load a raw image at a specific address.
+ *
+ * Returns 0 on success, a negative error code otherwise.
+ ******************************************************************************/
+static int load_raw_image(uintptr_t dev_handle,
+			uintptr_t image_spec,
+			uintptr_t image_base,
+			size_t image_size)
+{
+	uintptr_t image_handle;
+	size_t bytes_read;
+	int io_result;
+
+	/* Attempt to access the image */
+	io_result = io_open(dev_handle, image_spec, &image_handle);
+	if (io_result != 0) {
+		WARN("Failed to access raw image (%i)\n",
+			io_result);
+		return io_result;
+	}
+
+	INFO("Loading raw image from 0x%lx to address %p\n",
+		((io_block_spec_t*)image_spec)->offset, (void *) image_base);
+
+	/* We have enough space so load the image now */
+	/* TODO: Consider whether to try to recover/retry a partially successful read */
+	io_result = io_read(image_handle, image_base, image_size, &bytes_read);
+	if ((io_result != 0) || (bytes_read < image_size)) {
+		WARN("Failed to load raw image (%i)\n", io_result);
+		goto exit;
+	}
+
+	/*
+	 * File has been successfully loaded.
+	 * Flush the image to main memory so that it can be executed later by
+	 * any CPU, regardless of cache and MMU state.
+	 * When TBB is enabled the image is flushed later, after image
+	 * authentication.
+	 */
+	flush_dcache_range(image_base, image_size);
+
+	INFO("Raw image loaded at address %p, size = 0x%zx\n",
+		(void *) image_base, image_size);
+
+exit:
+	io_close(image_handle);
+	/* Ignore improbable/unrecoverable error in 'close' */
+
+	/* TODO: Consider maintaining open device connection from this bootloader stage */
+	io_dev_close(dev_handle);
+	/* Ignore improbable/unrecoverable error in 'dev_close' */
+
+	return io_result;
+}
+
+/*
+ * load raw image from boot device
+ */
+int sd_boot_load_raw_image(uintptr_t image_spec, uintptr_t image_base, size_t image_size)
+{
+	return load_raw_image(flash_boot_dev_handle, image_spec, image_base, image_size);
+}

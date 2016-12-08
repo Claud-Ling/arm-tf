@@ -42,6 +42,16 @@
 #define SD_BOOT_RESUME	1
 
 #ifndef __ASSEMBLY__
+
+#define SD_MAX(x, y) ((x) > (y) ? (x) : (y))
+#define SD_MIN(x, y) ((x) < (y) ? (x) : (y))
+
+/*
+ * alignment must be power of 2
+ */
+#define SD_ALIGNTO(x, a) ((x) & ~((a) - 1))
+#define SD_ALIGNTONEXT(x, a) (((x) + (a) - 1) & ~((a) - 1))
+
 void sd_configure_mmu_el1(unsigned long total_base, unsigned long total_size,
 			  unsigned long ro_start, unsigned long ro_limit);
 
@@ -58,10 +68,13 @@ void sd_timer_init(void);
 void sd_timer_show_timestamp(void);
 
 void sd_io_setup(void);
+int sd_boot_load_raw_image(uintptr_t image_spec, uintptr_t image_base, size_t image_size);
 
 int sd_ddr_init(void);
 
 void sd_wakeup_secondary(uintptr_t entry, int core);
+
+int sd_relocate_mcu(void *img, unsigned int img_size);
 
 /*
  * derive boot mode from mcu.
@@ -98,6 +111,13 @@ void sd_dcsn_drop_protections(void);
 void sd_pman_set_protections(void);
 void sd_pman_drop_protections(void);
 void sd_soc_set_protections(void);
+
+/*
+ * Board configure
+ */
+int sd_load_bdconf(void);
+int sd_bc_boardid(void);
+int sd_bc_paneltype(void);
 
 //int dt_add_psci_node(void *fdt);
 //int dt_add_psci_cpu_enable_methods(void *fdt);

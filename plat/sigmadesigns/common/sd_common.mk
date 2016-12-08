@@ -38,6 +38,12 @@ include ${SD_PLAT_COM}/make/config.mk
 # Proceed bitfields
 include ${SD_PLAT_COM}/make/bitfields.mk
 
+# Proceed top level build flags
+# By default, SCP images are needed.
+SD_LOAD_SCP_IMAGES	:=	1
+# By default, SCP boot in BL33 and is not needed here
+SD_BOOT_SCP		:=	0
+
 # Add __ATF__ flag for sigma
 __ATF__	:= 1
 $(eval $(call assert_boolean,__ATF__))
@@ -46,6 +52,7 @@ $(eval $(call add_define,__ATF__))
 PLAT_INCLUDES		:=	-Iinclude/common/tbbr				\
 				-I${SD_PLAT_COM}/include			\
 				-I${SD_PLAT_SOC}/include			\
+				-I${SD_PLAT_SOC}/include/${ARCH}		\
 				-I${SD_BUILD_GEN}
 
 PLAT_BL_COMMON_SOURCES	:=	lib/xlat_tables/xlat_tables_common.c		\
@@ -197,6 +204,25 @@ BL2_SOURCES		+=	${SD_OTP_SOURCES}
 include ${SD_PLAT_COM}/security.mk
 BL1_SOURCES		+=	${SD_SEC_SOURCES}
 BL31_SOURCES		+=	${SD_SEC_SOURCES}
+
+# Proceed SD_LOAD_SCP_IMAGES flag
+$(eval $(call assert_boolean,SD_LOAD_SCP_IMAGES))
+$(eval $(call add_define,SD_LOAD_SCP_IMAGES))
+
+ifeq (${SD_LOAD_SCP_IMAGES},1)
+  $(eval $(call FIP_ADD_IMG,SCP_BL2,--scp-fw))
+
+  include ${SD_PLAT_COM}/drivers/mcu/mcu.mk
+  BL2_SOURCES		+=	${SD_MCU_SOURCES}
+endif
+
+# Proceed SD_BOOT_SCP flag
+$(eval $(call assert_boolean,SD_BOOT_SCP))
+$(eval $(call add_define,SD_BOOT_SCP))
+
+ifeq (${SD_BOOT_SCP},1)
+  BL2_SOURCES		+=	${SD_PLAT_COM}/sd_bdconf.c
+endif
 
 # Force Rule
 .PHONY : FORCE

@@ -898,7 +898,7 @@ static int emmc_init(void)
 	 * Set SDHC tap delay in DDR50 mode
 	 * Derive tap delay value from OTP as ROM does
 	 */
-	tapdelay = fuse_read_field(gpfc_0, emmc_ddr_timing);
+	tapdelay = fuse_read_field(emmc_ddr_timing);
 	sdhci_writel((sdhci_readl(0x400) & ~0x1fff) | 0x1000 | (tapdelay << 8), 0x400);
 
 	sdhci_initialized = 1;

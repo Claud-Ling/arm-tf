@@ -32,6 +32,7 @@ initor	ADSP		10
 #
 # DCS PLF
 target	PMAN_SEC0	 4 plf
+target	Sec_Timer	53 plf
 
 # DCS AV
 target	TURING		15 av

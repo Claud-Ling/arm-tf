@@ -13,7 +13,7 @@ CONFIG_DDR		:=	0
 # Proceed with make flags
 $(eval $(call assert_boolean,CONFIG_DDR))
 ifeq (${CONFIG_DDR},1)
-  FORCED_DDR_CONFIG	:=	forced-ddr-config
+  FORCED_DDR_CONFIG	:=	FORCE
 else
   FORCED_DDR_CONFIG	:=
 endif
@@ -35,10 +35,13 @@ ddrtable-root		:=	${DDR_TABLE}
 #
 define config_ddrsetting
 	$(Q)set -e;	\
-	$(ddrconfig-script) $(1) $(2) $(3) $(4);
+	if [ ${CONFIG_DDR} -eq 1 ]; then	\
+		$(ddrconfig-script) $(1) $(2) $(3) config-ddr;	\
+	else	\
+		$(ddrconfig-script) $(1) $(2) $(3);	\
+	fi
 endef
 
-#	$(ddrconfig-script) "$(1)" "$(2)" "$(3)" "$(4)";
 #
 # Arguments:
 #   $(1) = ddrsetting file name
@@ -48,16 +51,11 @@ define resolve_name
 	${ddresolve-script} $(1);
 endef
 
-.PHONY : forced-ddr-config
-forced-ddr-config : $(ddrconfig-script)
-	$(Q)mkdir -p $(dir $(ddrsetting-file))
-	$(call config_ddrsetting,$(ddrtable-root),$(ddrtable-conf),$(ddrsetting-file),config-ddr)
-
-$(ddrsetting-file) : $(ddrconfig-script)
+$(ddrsetting-file) : $(ddrconfig-script) $(FORCED_DDR_CONFIG)
 	$(Q)mkdir -p $(dir $@)
 	$(call config_ddrsetting,$(ddrtable-root),$(ddrtable-conf),$(ddrsetting-file))
 
-$(ddrsetting-bin) : $(ddrsetting-file) ${SD_BUILD_TOOL}/${GENREGTABLE} $(FORCED_DDR_CONFIG)
+$(ddrsetting-bin) : $(ddrsetting-file) ${SD_BUILD_TOOL}/${GENREGTABLE}
 	$(Q)set -e;	\
 	mkdir -p $(dir $@);	\
 	${SD_BUILD_TOOL}/${GENREGTABLE}  -g ${SD_PLAT_COM}/drivers/ddr/tools/config.ini	\

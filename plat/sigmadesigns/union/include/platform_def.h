@@ -156,13 +156,13 @@
 /*
  * SCP_BL2 specific defines.
  * In union, SCP_BL2 means MCU firmware. It's loaded into the temporary buffer
- * at 0x0100_0000. Then BL2 will parse the sections and loaded them into
+ * same as BL31. Then BL2 will parse the sections and loaded them into
  * predefined separated buffers.
  */
-#if 0 //TODO
-#define SCP_BL2_BASE			(SD_NS_DRAM_BASE + 0x01000000)
-#define SCP_BL2_LIMIT			(SCP_BL2_BASE + 0x00100000)
-#define SCP_BL2_SIZE			(SCP_BL2_LIMIT - SCP_BL2_BASE)
+#if SD_LOAD_SCP_IMAGES
+#define SCP_BL2_BASE			BL31_BASE
+#define SCP_BL2_LIMIT			(SCP_BL2_BASE + SCP_BL2_SIZE)
+#define SCP_BL2_SIZE			0x10000
 #endif
 
 /*******************************************************************************

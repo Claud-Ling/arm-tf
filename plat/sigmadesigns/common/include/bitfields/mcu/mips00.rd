@@ -1,7 +1,7 @@
 #
 # Register Descriptor file (RD file, in *.rd) Template
 #
-# Generally, RD file is used to describe register,
+# Generally, RD file is used to describe 32-bit long register,
 # and each line of it represents a bit field in that register.
 #
 # Syntax:
@@ -13,7 +13,7 @@
 #              for now it can only be string of:
 #                  "type"      - specify register type, default 32-bit
 #   <val>      specifies value for the specified key.
-#              when <key> = "type", allowed value and its meaning are:
+#              when <key> = "type", the allowed values and their meaning are:
 #                  'b' or 'B'  - byte (8-bit)
 #                  'h' or 'H'  - halfword (16-bit)
 #                  'w' or 'W'  - word (32-bit)
@@ -34,3 +34,12 @@
 # Date:    2016/11/25
 #
 
+# register type
+type		b #8-bit register
+
+# bitfields
+mips_rstn_8051	 0 1 #mips reset 8051, low active
+mips_ldsram_en	 1 1
+valid_start_addr 2 1 #set to 1 when [MIPS01_REG,MIPS02_REG] used as sram start addr
+mips_intr_mcu	 3 1 #mips interrupt 8051
+mips_res_mcu	 4 1 #mips response 8051

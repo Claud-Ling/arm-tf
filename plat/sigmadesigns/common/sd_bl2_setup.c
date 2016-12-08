@@ -76,8 +76,17 @@ meminfo_t *bl2_plat_sec_mem_layout(void)
 
 int bl2_plat_handle_scp_bl2(struct image_info *scp_bl2_image_info)
 {
-	//TODO
-	return 0;
+	int ret = 0;
+#if SD_LOAD_SCP_IMAGES
+	ret = sd_relocate_mcu((void *)scp_bl2_image_info->image_base,
+		scp_bl2_image_info->image_size);
+
+	if (ret == 0)
+		INFO("BL2: SCP_BL2 relocated to SCP\n");
+	else
+		ERROR("BL2: SCP_BL2 relocate failure\n");
+#endif
+	return ret;
 }
 
 bl31_params_t *bl2_plat_get_bl31_params(void)

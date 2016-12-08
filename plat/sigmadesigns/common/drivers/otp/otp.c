@@ -3,6 +3,6 @@
 #include <sd_private.h>
 #include <sd_otp.h>
 
-DEFINE_FUSE_MAP(SD_OTP_DATA_BASE)
+DEFINE_FUSE_MAP(SD_OTP_DATA_BASE);
 
 

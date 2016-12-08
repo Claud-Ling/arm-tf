@@ -10,7 +10,7 @@
  *
  * examples:
  *   1.read BOOT_FROM_ROM fuse bit
- *     fuse_read_field(fc_2,boot_from_rom); or OTP_FUSE_FIELD(fc_2,boot_from_rom);
+ *     fuse_read_field(boot_from_rom); or fuse_field_boot_from_rom();
  *   2.read BOOT_ROM_CFG_1 value (flash_auth_length)
  *     fuse_read_entry(boot_rom_cfg_1); or OTP_FUSE_ENTRY(boot_rom_cfg_1);
  *   3.read rsa public key
@@ -31,11 +31,11 @@
 #ifndef __ASSEMBLY__
 
 #define DEFINE_FUSE_MAP(base)	\
-struct fuse_data_map *fuse_map = (struct fuse_data_map*)(base);
+struct fuse_data_map *fuse_map = (struct fuse_data_map*)(base)
 #define DECLARE_FUSE_MAP	\
-extern struct fuse_data_map *fuse_map;
+extern struct fuse_data_map *fuse_map
 
-DECLARE_FUSE_MAP
+DECLARE_FUSE_MAP;
 
 /*
  * @brief	read field value of specified register
@@ -88,6 +88,17 @@ int sd_read_fuse(unsigned int offset, unsigned int is_quad, unsigned int *out);
  */
 OTP_FUSE_DATA(rsa_pub_key)
 
+/*
+ * otp read fuse field helpers
+ */
+#define FIELD_HELPER(reg, bf)			\
+static inline int fuse_field_##bf (void)	\
+{						\
+	return OTP_FUSE_FIELD(reg, bf);		\
+}
+
+#include <fuse_helpers.h>
+#undef FIELD_HELPER
 
 /*
  * variants for user to choose
@@ -96,8 +107,8 @@ OTP_FUSE_DATA(rsa_pub_key)
 #define fuse_read_data(nm, buf, sz) fuse_read_data_##nm(buf, sz)
 /* read 4-bytes fuse entry #nm */
 #define fuse_read_entry(nm)	OTP_FUSE_ENTRY(nm)
-/* read fuse field #fn of entry #nm */
-#define fuse_read_field(nm,fn)	OTP_FUSE_FIELD(nm,fn)
+/* read fuse field #fn */
+#define fuse_read_field(fn)	fuse_field_##fn()
 
 #endif /*!__ASSEMBLY__*/
 

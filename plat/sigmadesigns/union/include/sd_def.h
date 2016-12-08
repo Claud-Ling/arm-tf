@@ -129,6 +129,7 @@
  * eMMC constants
  */
 #define SD_MMC_BASE			0xFB00A000
+#define SD_MMC_BOOT_SIZE		0x200000
 
 /*
  * NAND constants
@@ -192,5 +193,23 @@
  */
 #define SD_PMAN_SEC0_BASE		0xF5005000
 #define PMAN_SEC_GROUP_MAX		CONFIG_SIGMA_NR_UMACS
+
+/*
+ * Standby constants
+ */
+#define SD_STB_REG_BASE			0xF5000000
+#define SD_STB_MAX_SIZE			0x10000	/*64k*/
+
+/*
+ * Board configure constants
+ */
+#if (SD_STORAGE == SD_FLASH_MMC)
+# define SD_BDCONF_BASE			0x90000 /*576k at emmc bootpart*/
+#elif (SD_STORAGE == SD_FLASH_NAND)
+# define SD_BDCONF_BASE			(STORAGE_IMG_BASE + 0x1800000) /*24M*/
+#else
+# error "not support bdconf in selected storage type!"
+#endif
+#define SD_BDCONF_SIZE			FLASH_BLOCK_SIZE /*one block is enough*/
 
 #endif /*_SD_DEF_H___*/

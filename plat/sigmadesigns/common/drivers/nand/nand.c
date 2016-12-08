@@ -182,23 +182,23 @@ typedef uint32_t u32;
 
 /*OTP access helpers*/
 #define otp_flash_extra_delay()	\
-	fuse_read_field(boot_rom_cfg_0,flash_extra_delay)
+	fuse_read_field(flash_extra_delay)
 #define otp_nand_rb_sel()	\
-	fuse_read_field(boot_rom_cfg_0,nand_rb_sel)
+	fuse_read_field(nand_rb_sel)
 #define otp_nand_reset_on_boot()\
-	fuse_read_field(boot_rom_cfg_2,nand_reset_en)
+	fuse_read_field(nand_reset_en)
 #define otp_nand_id_dis()	\
-	fuse_read_field(fc_2,nand_id_dis)
+	fuse_read_field(nand_id_dis)
 #define otp_nand_page_size()	\
-	fuse_read_field(boot_rom_cfg_2,nand_page_size)
+	fuse_read_field(nand_page_size)
 #define otp_nand_addr_cycle()	\
-	fuse_read_field(boot_rom_cfg_2,nand_addr_cycle)
+	fuse_read_field(nand_addr_cycle)
 #define otp_nand_ctrler_sel()	\
-	fuse_read_field(fc_2,new_nand_ctrl_sel)
+	fuse_read_field(new_nand_ctrl_sel)
 #define otp_nand_ecc_bits()	\
-	(fuse_read_field(boot_rom_cfg_2,nand_ecc_bits) << 1)
+	(fuse_read_field(nand_ecc_bits) << 1)
 #define otp_nand_ecc_unit()	\
-	fuse_read_field(boot_rom_cfg_2,nand_ecc_unit)
+	fuse_read_field(nand_ecc_unit)
 
 enum nand_host {
         NAND_HOST_OLD = 0,
@@ -231,8 +231,6 @@ struct nand_chip {
 
 #define NAND_CMD_READSTART      0x30
 #define NAND_CMD_RNDOUTSTART    0xE0
-
-#define min(X,Y) ((X) > (Y) ? (Y) : (X))
 
 #define MAX_ECCPOS_ENTRIES_LARGE 680
 
@@ -668,7 +666,7 @@ size_t nand_read(u32 *buffer, u32 addr, size_t length)
 	col = (addr & (nand.page_size - 1));
 
 	do {
-		bytes = min(nand.page_size - col, left);
+		bytes = SD_MIN(nand.page_size - col, left);
 
 		ret = nand_do_read_ops(data, addr, bytes);
 		if(ret < 0)

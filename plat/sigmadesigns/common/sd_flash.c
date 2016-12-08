@@ -40,6 +40,8 @@ static struct flash_ops {
 	void (*deinit)(void);
 	size_t (*blk_read)(int lba, uintptr_t buf, size_t size);	/*mandatory*/
 	size_t (*blk_write)(int lba, const uintptr_t buf, size_t size);
+	size_t (*boot_read)(int lba, uintptr_t buf, size_t size);	/*mandatory*/
+	size_t (*boot_write)(int lba, const uintptr_t buf, size_t size);
 } flash_ops;
 
 int sd_flash_init(void)
@@ -50,6 +52,8 @@ int sd_flash_init(void)
 	ops->deinit	= sd_emmc_deinit;
 	ops->blk_read	= emmc_read_blocks;
 	ops->blk_write	= emmc_write_blocks;
+	ops->boot_read	= emmc_boot_read_blocks;
+	ops->boot_write	= emmc_boot_write_blocks;
 #elif (SD_STORAGE == SD_FLASH_NAND)
 	ops->init	= sd_nand_init;
 	ops->deinit	= sd_nand_deinit;
@@ -87,5 +91,24 @@ size_t sd_flash_write_blocks(int lba, const uintptr_t buf, size_t size)
 	} else {
 		NOTICE("write_blocks not supported!\n");
 		return -1;
+	}
+}
+
+size_t sd_flash_boot_read_blocks(int lba, uintptr_t buf, size_t size)
+{
+	struct flash_ops *ops = &flash_ops;
+	if (ops->boot_read)
+		return ops->boot_read(lba, buf, size);
+	else
+		return sd_flash_read_blocks(lba, buf, size);
+}
+
+size_t sd_flash_boot_write_blocks(int lba, const uintptr_t buf, size_t size)
+{
+	struct flash_ops *ops = &flash_ops;
+	if (ops->boot_write) {
+		return ops->boot_write(lba, buf, size);
+	} else {
+		return sd_flash_write_blocks(lba, buf, size);
 	}
 }

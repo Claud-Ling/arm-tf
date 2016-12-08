@@ -1,7 +1,6 @@
 #
 # bitfield.pl tool
 # It can be used to generate register bitfield file based on a register descriptor file (*.rd)
-# So far it works for 32-bit registers only. 
 #
 #
 #!/usr/bin/perl -w
@@ -18,6 +17,7 @@ my $reg;
 my @name;
 my @width;
 my @rw;
+my $nbits = 32; # default 32-bits
 my $i;
 my $previ;
 
@@ -40,7 +40,18 @@ while ($l0=<F>) {
 
   # support empty lines that do not contain white spaces
   if ($l0 =~ /^$/) {
-	  next;
+    next;
+  }
+
+  # support configure line: type b|B|h|H|w|W|q|Q
+  if ($l0 =~ /type\s*(.*)/) {
+    $nbits = 0;
+    $nbits = 8  if ($1 =~ /\b[bB]\b\s*(.*)/);
+    $nbits = 16 if ($1 =~ /\b[hH]\b\s*(.*)/);
+    $nbits = 32 if ($1 =~ /\b[wW]\b\s*(.*)/);
+    $nbits = 64 if ($1 =~ /\b[qQ]\b\s*(.*)/);
+    die "? $l0 " unless ($nbits != 0);
+    next;
   }
 
   # <name> <start> <bits> [comments]
@@ -76,7 +87,7 @@ print <<END;
 
 END
 
-for ($i = 31; $i >= 0; $i--) {
+for ($i = ${nbits}-1; $i >= 0; $i--) {
   if (exists $width[$i]) {
     print <<END;
 #define ${reg}_$name[$i]_SHIFT $i /* $rw[$i] */
@@ -90,11 +101,11 @@ print <<END;
 #ifndef __ASSEMBLY__
 
 union ${reg}Reg {
-        struct { __extension__ uint32_t // lsbs...
+        struct { __extension__ uint${nbits}_t // lsbs...
 END
 
 $previ=0;
-for ($i = 0; $i < 32; $i++) {
+for ($i = 0; $i < $nbits; $i++) {
   if (exists $width[$i]) {
     print ",\n" if ($previ);
 
@@ -107,7 +118,7 @@ for ($i = 0; $i < 32; $i++) {
   }
 
 }
-$previ=32-$previ;
+$previ=$nbits-$previ;
 if ($previ==0) {
   print "; // ... to msbs\n";
 }
@@ -118,7 +129,7 @@ else {
 print <<END;
         } bits;
 
-        uint32_t val;
+        uint${nbits}_t val;
 };
 
 #endif /* !__ASSEMBLY__ */

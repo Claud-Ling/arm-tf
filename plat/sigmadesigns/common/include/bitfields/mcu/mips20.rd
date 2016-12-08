@@ -1,7 +1,7 @@
 #
 # Register Descriptor file (RD file, in *.rd) Template
 #
-# Generally, RD file is used to describe register,
+# Generally, RD file is used to describe 32-bit long register,
 # and each line of it represents a bit field in that register.
 #
 # Syntax:
@@ -10,10 +10,9 @@
 #
 # where,
 #   <key>      specifies key name.
-#              for now it can only be string of:
-#                  "type"      - specify register type, default 32-bit
+#              for now it can only be string of: "type"
 #   <val>      specifies value for the specified key.
-#              when <key> = "type", allowed value and its meaning are:
+#              when <key> = "type", the allowed values and their meaning are:
 #                  'b' or 'B'  - byte (8-bit)
 #                  'h' or 'H'  - halfword (16-bit)
 #                  'w' or 'W'  - word (32-bit)
@@ -34,3 +33,12 @@
 # Date:    2016/11/25
 #
 
+# register type
+type		b #8-bit register
+
+# bitfields
+reg_start	0 1 #0:first power on in mode A; 1:not first power on in mode A
+bist_error10	1 2 #bist_error[1:0] of sram
+stb_en		3 1
+spi_en		4 1
+bist_error32	5 2 #bist_error[3:2] of sram
