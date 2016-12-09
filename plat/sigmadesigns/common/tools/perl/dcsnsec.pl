@@ -154,7 +154,8 @@ print <<END;
 END
 
 for ($i = 0; $i < $tnum; $i++) {
-  print "#define DCSN_TARGET_$tname[$i]\t$tid[$i]\t/* DCS $tgrp[$i] $trw[$i] */\n";
+  my $nm = uc($tname[$i]);
+  print "#define DCSN_TARGET_$nm\t$tid[$i]\t/* DCS $tgrp[$i] $trw[$i] */\n";
 }
 
 print <<END;
@@ -279,6 +280,12 @@ for ($i = 0; $i < $tnum; $i++) {
 }
 
 print <<END;
+
+/*
+ * generic dcs target access quotation helper
+ * <nm> specifies the target name
+ */
+#define dcs_target_access(nm) dcs_target_access_##nm
 
 #endif /* !__ASSEMBLY__ */
 #endif /* __${FN}_H__ */
