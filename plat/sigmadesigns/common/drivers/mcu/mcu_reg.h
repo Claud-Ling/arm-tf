@@ -32,6 +32,8 @@ struct stb_regfile *stb_regs = (struct stb_regfile*)(base)
 extern struct stb_regfile *stb_regs
 #define STB_REG(nm) stb_regs-> nm
 
+DECLARE_STB_REGS;
+
 #endif /*!__ASSEMBLY__*/
 
 #endif /*__MCU_REG_H__*/

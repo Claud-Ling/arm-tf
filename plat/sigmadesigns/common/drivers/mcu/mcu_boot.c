@@ -8,8 +8,6 @@
 #include <sd_private.h>
 #include "mcu_reg.h"
 
-DEFINE_STB_REGS(SD_STB_REG_BASE);
-
 #define SD_STB_MAX_SIZE		0x10000
 #define MCU_STB_MODE_A		0xAA
 

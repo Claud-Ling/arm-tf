@@ -107,6 +107,9 @@ void bl31_platform_setup(void)
 
 #endif /* RESET_TO_BL31 */
 
+	/* Initialize mcu_comm driver */
+	mcomm_init();
+
 	//TODO: Anything else?!
 }
 

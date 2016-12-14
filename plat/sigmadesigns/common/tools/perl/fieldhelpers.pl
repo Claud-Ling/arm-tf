@@ -8,6 +8,10 @@
 # 1. each RD file under specified directory shall be set with distinct name;
 # 2. field name shall be distinct in all RD files scale;
 #
+# Author: Tony He
+# Date:   2016/12/08
+#
+
 #!/usr/bin/perl -w
 
 use strict;

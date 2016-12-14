@@ -450,6 +450,18 @@ struct emmc_data {
 static unsigned int extcsd_part_config = -1;
 static int sdhci_initialized = 0;
 
+/*
+ * The following functions are weakly defined. They provide dummy
+ * implementations that shall be overridden by a SoC.
+ */
+#pragma weak sd_soc_pinshare_init_for_mmc
+
+int sd_soc_pinshare_init_for_mmc(int id)
+{
+	INFO("dummy pinshare for mmc %d\n", id);
+	return 0;
+}
+
 static void emmc_transfer_pio(struct emmc_data *data)
 {
 	int i;

@@ -191,9 +191,23 @@ void sd_pwr_domain_suspend_finish(const psci_power_state_t *target_state)
  ******************************************************************************/
 __dead2 void sd_system_off(void)
 {
-	//TODO
-	NOTICE("System Off: operation not implemented.\n");
-	panic();
+	int ret;
+	unsigned char dummy[4];
+	NOTICE("Power off system\n");
+	ret = mcomm_send_mcu_cmd(HOST_CMD_POWEROFF, (uintptr_t)dummy, sizeof(dummy));
+	if (ret < 0) {
+		ERROR("send poweroff cmd failed! error %d\n", ret);
+		/* it usually means buggy when execution hits here.
+		 * for mcomm driver shall already tried several times
+		 * before return, it's no meaning to retry again.
+		 */
+	}
+	/*
+	 * trap the calling core
+	 */
+	do {
+		wfi();
+	} while (1);
 }
 
 /*******************************************************************************
@@ -201,15 +215,29 @@ __dead2 void sd_system_off(void)
  ******************************************************************************/
 __dead2 void sd_system_reset(void)
 {
+	int ret;
+	unsigned char dummy[4];
 	/* per-SoC system reset handler */
 	sd_soc_prepare_system_reset();
 
 	/*
 	 * Program the PMC in order to restart the system.
 	 */
-	//TODO
-	NOTICE("System Reset: operation not implemented.\n");
-	panic();
+	NOTICE("Restart system\n");
+	ret = mcomm_send_mcu_cmd(HOST_CMD_REBOOT, (uintptr_t)dummy, sizeof(dummy));
+	if (ret < 0) {
+		ERROR("send reboot cmd failed! error %d\n", ret);
+		/* it usually means buggy when execution hits here.
+		 * for mcomm driver shall already tried several times
+		 * before return, it's no meaning to retry again.
+		 */
+	}
+	/*
+	 * trap the calling core
+	 */
+	do {
+		wfi();
+	} while (1);
 }
 
 /*******************************************************************************

@@ -34,6 +34,7 @@
 #include <sys/types.h>
 #include <psci.h>
 #include <sd_flash.h>
+#include <sd_mcu_comm.h>
 
 #define SYS_NOERROR	0
 #define SYS_FAIL	1
