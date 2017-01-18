@@ -1,6 +1,6 @@
 #
-# UNION fuse register descriptor file
-# Based on <ProUNION_revA_Fuse_Data_Map 20160815.xlsx>
+# UNION2 fuse register descriptor file
+# Based on <ProUNION2_revA_Fuse_Data_Map 20161201.xlsx>
 #
 # Register Descriptor file (RD file, in *.rd) Description
 #
@@ -8,7 +8,7 @@
 # and each line of it represents a bit field in that register.
 #
 # The file shall be named as 'fuse_entry_name'.rd for matching with FD file.
-# Where 'fuse_entry_name' represents an fuse entry, which shall be derived 
+# Where 'fuse_entry_name' represents an fuse entry, which shall be derived
 # from Fuse_Data_Map.xlsx file, in lowercase.
 #
 # Syntax:
@@ -23,15 +23,9 @@
 # Note, <start> and <bits> shall be given in decimal form
 #
 # Author:  Tony He
-# Date:    2016/11/25
+# Date:    2017/01/18
 #
 
-nand_addr_cycle		 0  4
-nand_page_size		 4  4 #0 = 512; 1 = 2K; 2 = 4K; 3 = 8K; 4 = 16K
-nand_backup_page_step	 9  4 #in unit of 16
-nand_ecc_bits		13  5 #in unit of 2
-nand_ecc_unit		18  1 #0 = 512; 1 = 1024
-nand_reset_en		19  1 #reset on boot entry
-spi_read_mode		22  3
-spi_clk_speed		25  4
-flash_type		29  3 #001 = n/a; 010 = SPI; 100 = NAND; 101 = eMMC; others n/a
+design_id	 0  8 #chip revision ID: 0x00: A0; 0x01: A1; 0x02: A2; 0x03: A3; 0x04: A4;...0x05, A5
+dts_sound_en	 8  1 #AUDIO DTS : DTS_SOUND_EN 1- DTS_SOUND_EN
+dts_decode_en	 9  1 #AUDIO DTS : DTS_DECODE_EN 1- DTS_DECODE_EN

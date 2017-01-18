@@ -1,6 +1,6 @@
 #
-# UNION fuse register descriptor file
-# Based on <ProUNION_revA_Fuse_Data_Map 20160815.xlsx>
+# UNION2 fuse register descriptor file
+# Based on <ProUNION2_revA_Fuse_Data_Map 20161201.xlsx>
 #
 # Register Descriptor file (RD file, in *.rd) Description
 #
@@ -9,7 +9,7 @@
 #
 # The file shall be named as 'fuse_entry_name'.rd for matching with FD file.
 # Where 'fuse_entry_name' represents an fuse entry, which shall be derived 
-# from Fuse_Data_Map.xlsx file, in lowercase.
+# from Fuse_Data_Map file, in lowercase.
 #
 # Syntax:
 # <name>  <start>  <bits> [comments]
@@ -23,15 +23,15 @@
 # Note, <start> and <bits> shall be given in decimal form
 #
 # Author:  Tony He
-# Date:    2016/11/25
+# Date:    2017/01/18
 #
 
-nand_addr_cycle		 0  4
-nand_page_size		 4  4 #0 = 512; 1 = 2K; 2 = 4K; 3 = 8K; 4 = 16K
-nand_backup_page_step	 9  4 #in unit of 16
-nand_ecc_bits		13  5 #in unit of 2
-nand_ecc_unit		18  1 #0 = 512; 1 = 1024
-nand_reset_en		19  1 #reset on boot entry
-spi_read_mode		22  3
-spi_clk_speed		25  4
-flash_type		29  3 #001 = n/a; 010 = SPI; 100 = NAND; 101 = eMMC; others n/a
+flash_extra_delay		 0 16 #in unit of ms for emmc or us for nand
+nand_rb_sel			16  1 #nand ready/busy bit select
+emmc_new_high_speed_en		17  1 #n/a
+emmc_new_chg_clock_div		18  1 #n/a
+emmc_stop_boot_en		19  1 #stop boot mode on exit
+emmc_extra_delay_en		20  1
+emmc_power_rst_on_boot_en	21  1 #power reset on boot
+emmc_new_set_clock_div		22  1 #n/a
+emmc_boot_switch_en		23  1

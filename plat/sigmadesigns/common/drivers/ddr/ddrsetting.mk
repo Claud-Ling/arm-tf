@@ -6,9 +6,9 @@ include ${SD_PLAT_COM}/drivers/ddr/tools/tools.mk
 # DDR setting related make flags
 #
 # ddr_table location
-DDR_TABLE		:=	${SD_PLAT_COM}/drivers/ddr/ddr_table
+DDR_TABLE		?=	${SD_PLAT_SOC}/res/ddr_table
 # DDR setting force configuring flag
-CONFIG_DDR		:=	0
+CONFIG_DDR		?=	0
 
 # Proceed with make flags
 $(eval $(call assert_boolean,CONFIG_DDR))
@@ -23,7 +23,7 @@ ddresolve-script	:=	${SD_PLAT_COM}/drivers/ddr/scripts/resolve_setting.sh
 ddrsetting-file		:=	${SD_BUILD_GEN}/tuning.dat
 ddrsetting-bin		:=	${SD_BUILD_GEN}/ddrsetting.bin
 ddrsetting-header	:=	${SD_BUILD_GEN}/ddrsetting.h
-ddrtable-conf		:=	.ddr_table_selection
+ddrtable-conf		:=	${SD_BUILD_GEN}/ddr_table_selection
 ddrtable-root		:=	${DDR_TABLE}
 
 #

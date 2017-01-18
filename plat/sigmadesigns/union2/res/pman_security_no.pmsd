@@ -1,0 +1,13 @@
+#
+# PMAN Security Descriptor File (PMSD)
+# Syntax:
+# <name> <id> [comments]
+#
+# <id> specifies security no. which shall be present in decimal
+#
+
+ARM_SEC		 2 #secure access
+ARM_NS		 3 #non-secure access
+TURING		13 #turing
+CRYPTO		14 #crypto_vdd
+

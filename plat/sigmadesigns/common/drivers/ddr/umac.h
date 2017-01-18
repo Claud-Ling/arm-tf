@@ -69,16 +69,22 @@ typedef unsigned int U32;
 struct umac_mctl{
 	volatile U32 if_enable;			/* +0x000 */
 	volatile U32 if_busy;			/* +0x004 */
-	volatile U32 if0_coh_contro;		/* +0x008 */
-	volatile U32 if1_coh_contro;		/* +0x00c */
-	volatile U32 if2_coh_contro;		/* +0x010 */
-	volatile U32 if3_coh_contro;		/* +0x014 */
-	volatile U32 if4_coh_contro;		/* +0x018 */
-	volatile U32 if5_coh_contro;		/* +0x01c */
-	volatile U32 pad0[NW(0x020,0xff0)];	/* +0x020 */
+	volatile U32 pad8[NW(0x008,0x040)];	/* +0x008 */
+	volatile U32 if0_coh_contro;		/* +0x040 */
+	volatile U32 pad44[NW(0x044,0x060)];	/* +0x044 */
+	volatile U32 if1_coh_contro;		/* +0x060 */
+	volatile U32 pad64[NW(0x064,0x080)];	/* +0x064 */
+	volatile U32 if2_coh_contro;		/* +0x080 */
+	volatile U32 pad84[NW(0x084,0x0a0)];	/* +0x084 */
+	volatile U32 if3_coh_contro;		/* +0x0a0 */
+	volatile U32 pada4[NW(0x0a4,0x0c0)];	/* +0x0a4 */
+	volatile U32 if4_coh_contro;		/* +0x0c0 */
+	volatile U32 padc4[NW(0x0c4,0x0e0)];	/* +0x0c4 */
+	volatile U32 if5_coh_contro;		/* +0x0e0 */
+	volatile U32 pade4[NW(0x0e4,0xff0)];	/* +0x0e4 */
 	volatile U32 sw_reset;			/* +0xff0 */
 	volatile U32 powermode_ctrl;		/* +0xff4 */
-	volatile U32 pad1[NW(0xff8,0xffc)];	/* +0xff8 */
+	volatile U32 padff8[NW(0xff8,0xffc)];	/* +0xff8 */
 	volatile U32 module_id;			/* +0xffc */
 };
 
@@ -374,7 +380,7 @@ struct pman_con{
 	volatile PMAN_CON_HUB_ADDRReg hub2_end_addr;	/* +0x044 */
 	volatile U32 pad1[NW(0x048,0xffc)];	/* +0x048 */
 	volatile U32 module_id;			/* +0xffc */
-#elif defined (CONFIG_SIGMA_SOC_SX8) || defined (CONFIG_SIGMA_SOC_UNION)
+#elif defined (CONFIG_SIGMA_SOC_SX8)
 # define PMAN_HUB_REMAP
 	volatile U32 pad0[NW(0x000,0x03c)];	/* +0x000 */
 	volatile PMAN_CON_HUB_ADDRReg hub0_start_addr;	/* +0x03c */
@@ -384,6 +390,13 @@ struct pman_con{
 	volatile PMAN_CON_HUB_ADDRReg hub2_start_addr;	/* +0x04c */
 	volatile PMAN_CON_HUB_ADDRReg hub2_end_addr;	/* +0x050 */
 	volatile U32 pad1[NW(0x054,0xffc)];	/* +0x054 */
+	volatile U32 module_id;			/* +0xffc */
+#elif defined (CONFIG_SIGMA_SOC_UNION) || defined (CONFIG_SIGMA_SOC_UNION2) //TODO
+# define PMAN_HUB_REMAP
+	volatile U32 pad0[NW(0x000,0x034)];	/* +0x000 */
+	volatile PMAN_CON_HUB_ADDRReg hub0_start_addr;	/* +0x034 */
+	volatile PMAN_CON_HUB_ADDRReg hub0_end_addr;	/* +0x038 */
+	volatile U32 pad1[NW(0x03c,0xffc)];	/* +0x03c */
 	volatile U32 module_id;			/* +0xffc */
 #else
 # undef PMAN_HUB_REMAP

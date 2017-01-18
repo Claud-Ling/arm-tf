@@ -1,0 +1,63 @@
+#
+# Fuse Descriptor (FD) file for UNION2
+# Based on <ProUNION2_revA_Fuse_Data_Map 20161201.xlsx>
+#
+# Syntax:
+# <name>  <offset>  <length>
+#
+# where,
+#   <name> indicate an fuse register (data)
+#   <offset> specifies the offset value against OTP_DATA_BASE
+#   <length> specifies the length of such fuse.
+#
+# Note, <offset> and <length> shall be given in hexdecimal form
+#
+#
+# Author:  Tony He
+# Date:    2017/01/18
+#
+
+fuse_ctl_cfg			000  004
+fc_0				004  004
+fc_1				008  004
+fc_2				00c  004
+fc_3				010  004
+crypto_cfg_0			014  004
+crypto_cfg_1			018  004
+crypto_cfg_2			01c  004
+tsp_cfg_0			020  004
+tsp_cfg_1			024  004
+rsa_key_gen			028  004
+kl_final_key_att_crypto_kv	02c  004
+kl_final_key_att_tsp_kt_0	030  004
+kl_final_key_att_tsp_kt_1	034  004
+die_id_0			038  004
+gd_word_15			03c  004
+gd_word_16			040  004
+gd_word_17			044  004
+gpfc_0				048  004
+gpfc_1				04c  004
+gd_word_20			050  004
+die_char_1			054  004
+gd_word_22			058  004
+gd_word_23			05c  004
+template_reference		060  004
+boot_rom_cfg_0			064  004
+boot_rom_cfg_1			068  004
+boot_rom_cfg_2			06c  004
+fuse_sig			080  010
+obf_data			090  010
+chip_id				0a0  010
+jtag_pwd			0b0  010
+otp_key_0			0c0  010
+otp_key_1			0d0  010
+otp_key_2			0e0  010
+otp_key_3			0f0  010
+otp_key_4			100  010
+otp_key_5			110  010
+watermark_priv_data		120  010
+hdcp_keys			130  120
+spare_ecc_0			250  010
+spare_ecc_1			260  010
+hmac256_key			270  020
+rsa_pub_key			290  100

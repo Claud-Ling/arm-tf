@@ -34,7 +34,7 @@
 /*
  * SoC constants
  */
-#define CONFIG_SIGMA_SOC_UNION
+#define CONFIG_SIGMA_SOC_UNION2
 
 /*******************************************************************************
  * This value is used by the PSCI implementation during the `SYSTEM_SUSPEND`
@@ -145,7 +145,7 @@
 /*
  * OTP constants
  */
-#define SD_TURING_BASE			0xF1040000
+#define SD_TURING_BASE			0xF5100000
 #define SD_OTP_FUSE_BASE		(SD_TURING_BASE + 0x1000)
 #define SD_OTP_DATA_BASE		(SD_OTP_FUSE_BASE + 0x100)
 

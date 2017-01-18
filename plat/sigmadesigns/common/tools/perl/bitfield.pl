@@ -44,7 +44,7 @@ while ($l0=<F>) {
   }
 
   # support configure line: type b|B|h|H|w|W|q|Q
-  if ($l0 =~ /type\s*(.*)/) {
+  if ($l0 =~ /^type\s*(.*)/) {
     $nbits = 0;
     $nbits = 8  if ($1 =~ /\b[bB]\b\s*(.*)/);
     $nbits = 16 if ($1 =~ /\b[hH]\b\s*(.*)/);

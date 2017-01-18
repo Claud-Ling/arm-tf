@@ -1669,7 +1669,8 @@ static int do_dump_generic_group_script_fortuning(char *buff, struct sEntryGroup
 {
 	int i;
    // debugtuning(buff,entryGroup);
-	if (strcasecmp(strGroups[entryGroup->group_id],"TUNING")==0)
+	/*targeting groups: TUNING,BALANCE,and TUNING1*/
+	//if (strcasecmp(strGroups[entryGroup->group_id],"TUNING")==0)
 	{
   //printf("entryGroup->size is %d",entryGroup->size);
 	for(i = 0; i < entryGroup->size; i += sizeof(struct sEntryDDRRegister))
@@ -1859,7 +1860,9 @@ static int do_dump_reg_table_into_script(char *buff)
 			return 1;
 		}
 	
-          if (strcmp(strGroups[entryGroup->group_id],"TUNING")==0)
+          if (strcmp(strGroups[entryGroup->group_id],"TUNING")==0 ||
+	      strcmp(strGroups[entryGroup->group_id],"TUNING1")==0 ||
+	      strcmp(strGroups[entryGroup->group_id],"BALANCE")==0 )
 			  {
 			do_dump_generic_group_script_fortuning(buff,entryGroup);
 		
@@ -1984,7 +1987,7 @@ int write_reg_table(const char *out_file, struct sEntryGeneric *entryGeneric, un
 		return 3;
 	}
 
-	fprintf(stdout, "  Register table CRC32: 0x%08x\n", 
+	fprintf(stdout, "  Register table CRC32: 0x%08x\n",
 			entryGeneric[0].u.entryFirst.crc32);
 
 #ifdef DUMP_REG_TABLE
@@ -2242,7 +2245,9 @@ void host_to_target(struct sEntryGeneric *entry)
 		else
 		{
                         
-		   if(group_num && (!strcmp(strGroups[group_num],"TUNING")))
+		   if(group_num && (!strcmp(strGroups[group_num],"TUNING") ||
+				    !strcmp(strGroups[group_num],"TUNING1") ||
+				    !strcmp(strGroups[group_num],"BALANCE")))
 		one_group_host_to_target((struct sEntryGeneric *)(entry + group_offset/12),group_size/12,1);
                 else
                 
@@ -2469,7 +2474,9 @@ int target_to_host(struct sEntryGeneric *entry)
 		}
 		else
 		{	//printf("trace 222222222\n");
-		  if(group_num && (!strcmp(strGroups[group_num],"TUNING")))
+		  if(group_num && (!strcmp(strGroups[group_num],"TUNING") ||
+				   !strcmp(strGroups[group_num],"TUNING1") ||
+				   !strcmp(strGroups[group_num],"BALANCE")))
 		    one_group_target_to_host((struct sEntryGeneric *)(entry + entryGroup->offset/12),entryGroup->size/12,1);
 		  else
 		    one_group_target_to_host((struct sEntryGeneric *)(entry + entryGroup->offset/12),entryGroup->size/12,0);

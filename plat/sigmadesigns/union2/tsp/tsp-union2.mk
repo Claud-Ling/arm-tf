@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2016, ARM Limited and Contributors. All rights reserved.
+# Copyright (c) 2015, ARM Limited and Contributors. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -28,33 +28,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-# flags
-COLD_BOOT_SINGLE_CPU		:=	0
-PROGRAMMABLE_RESET_ADDRESS	:=	0
-ENABLE_PLAT_COMPAT		:=	0
-
-SD_PLAT			:=	plat/sigmadesigns
-SD_PLAT_SOC		:=	${SD_PLAT}/${PLAT}
-SD_PLAT_COM		:=	${SD_PLAT}/common
-
-include ${SD_PLAT_COM}/sd_common.mk
-
-BL1_SOURCES		+=	lib/cpus/aarch64/cortex_a53.S			\
-				${SD_PLAT_SOC}/plat_pinshare.c			\
-				${SD_PLAT_SOC}/plat_security.c
-
-BL2_SOURCES		+=	${SD_PLAT_SOC}/plat_pinshare.c			\
-				${SD_PLAT_SOC}/plat_security.c
-
-BL31_SOURCES		+=	lib/cpus/aarch64/cortex_a53.S			\
-				${SD_PLAT_SOC}/plat_psci_handlers.c		\
-				${SD_PLAT_SOC}/plat_security.c
-
-#Dependencies
-${SD_PLAT_SOC}/plat_security.c : sd-dcsnsec sd-pmansec $(BITFIELDS_DEPS_cpu)
-
-# Flag used by the platform port to determine the version of ARM GIC
-# architecture to use for interrupt management in EL3.
-ARM_GIC_ARCH		:=	3
-$(eval $(call add_define,ARM_GIC_ARCH))
-
+# TSP source files common to ARM standard platforms
+BL32_SOURCES		+=	plat/common/aarch64/platform_mp_stack.S		\
+				${SD_PLAT_SOC}/tsp/sd_tsp_setup.c		\
+				${SD_GIC_SOURCES}

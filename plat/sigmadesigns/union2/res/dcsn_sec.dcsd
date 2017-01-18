@@ -32,10 +32,12 @@ initor	ADSP		10
 #
 # DCS PLF
 target	PMAN_SEC0	 4 plf
+target	PMAN_SEC1	 6 plf
 target	Sec_Timer	53 plf
+target  Turing		54 plf
 
 # DCS AV
-target	TURING		15 av
+target  av_to_plf	 0 av   #PLF_MMIO_BRIDGE
 
 # DCS DISP
 target	disp_to_av	 0 disp #AV_MMIO_BRIDGE

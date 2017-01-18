@@ -1,0 +1,10 @@
+
+Register Descriptor file (RD file, in *.rd) Description
+
+Generally, RD file is suitable to describe 32-bit long register, and each line of it represents a bit field in the register.
+
+Here is the bitfield syntax in a RD file:
+
+bitfield_name  start_bit  number_of_bits  comments
+
+Go check rd_file.template for details.

@@ -89,7 +89,7 @@ while ($l0=<F>) {
     $tnum++;
   }
   else {
-    die "? $l0\n";
+    die "? $l0";
   }
 }
 
@@ -135,7 +135,10 @@ printf ("#define DCSN_SEC_EVERYBODY    0x%x\n", ((1 << ($j + 1)) - 1));
 for ($i = 0; $i < $tnum; $i++) {
   for ($j = 0; $j < $tnum; $j++) {
     if ($i != $j) {
-      die "? target `$tname[$i]' vs `$tname[$j]' in $FN" if ($tid[$i] == $tid[$j]);
+      die "? dup target name `$tname[$i] in $FN" if ($tname[$i] eq $tname[$j]);
+      if ($tgrp[$i] eq $tgrp[$j]) {
+        die "? dup target id `$tname[$i]' vs `$tname[$j]' in $FN" if ($tid[$i] == $tid[$j]);
+      }
     }
   }
   for ($j = 0; $j < $gnum; $j++) {
