@@ -239,7 +239,7 @@ int gen_reg_table(char *in_file[], const char *out_file)
 			return ret;
 		}
 #else
-		memset(entryGeneric, 0, sizeof(entryGeneric));
+		memset(entryGeneric, 0, ENTRY_MAX_NUM*sizeof(struct sEntryGeneric));
 		if(0 != (ret = create_reg_table(in_file,entryGeneric)))
 		{
 			return ret;

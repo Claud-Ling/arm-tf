@@ -226,6 +226,12 @@ ifeq (${SD_LOAD_SCP_IMAGES},1)
   endif
 endif
 
+# Proceed with veloce stuffs
+VELOCE			:=	0
+$(eval $(call assert_boolean,VELOCE))
+SD_VELOCE		:=	$(VELOCE)
+$(eval $(call add_define,SD_VELOCE))
+
 # Force Rule
 .PHONY : FORCE
 FORCE :

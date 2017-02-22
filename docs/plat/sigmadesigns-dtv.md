@@ -24,8 +24,8 @@ Introduction
 How to build
 ------------
 
-'CROSS_COMPILE=<path-to-aarch64-gcc>/bin/aarch64-linux-gnu make PLAT=<soc e.g. union> \
-SPD=<dispatcher e.g. tspd> BL33=<path-to-u-boot.bin> bl1 fip'
+    CROSS_COMPILE=<path-to-aarch64-gcc>/bin/aarch64-linux-gnu make PLAT=<soc e.g. union> \
+    SPD=<dispatcher e.g. tspd> BL33=<path-to-u-boot.bin> bl1 fip'
 
 Build flags
 -------------
@@ -64,6 +64,9 @@ to the build command line.
     Boolean flag that is used to turn on security protections within firmware.
     Default 1.
 
+*   **VELOCE**
+    Boolean flag that is used to turn on veloce option within firmware.
+    Default 0.
 
 Power management
 ----------------

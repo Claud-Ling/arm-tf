@@ -72,7 +72,7 @@
 
 /* Always assume DDR is 1GB size. */
 #define SD_DRAM_BASE			0x00000000
-#define SD_DRAM_SIZE			0x80000000
+#define SD_DRAM_SIZE			0x40000000
 
 /* World Share Memory 2M@256M */
 #define SD_WSM_BASE			0x10000000

@@ -37,6 +37,11 @@ SD_PLAT			:=	plat/sigmadesigns
 SD_PLAT_SOC		:=	${SD_PLAT}/${PLAT}
 SD_PLAT_COM		:=	${SD_PLAT}/common
 
+# bl32 default to prebuild tee.bin
+ifeq ($(SPD),opteed)
+BL32			:=	$(SD_PLAT_SOC)/prebuild/tee.bin
+endif
+
 include ${SD_PLAT_COM}/sd_common.mk
 
 BL1_SOURCES		+=	lib/cpus/aarch64/cortex_a53.S			\

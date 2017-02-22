@@ -150,8 +150,14 @@
 /*******************************************************************************
  * BL32 specific defines.
  ******************************************************************************/
-#define BL32_BASE			BL31_LIMIT
-#define BL32_LIMIT			(SD_SEC_DRAM_BASE + 0x100000)
+#define BL32_SRAM_BASE			SD_SRAM_BASE
+#define BL32_SRAM_LIMIT			BL32_SRAM_BASE	/* N/A */
+
+#define BL32_DRAM_BASE			BL31_LIMIT
+#define BL32_DRAM_LIMIT			(SD_SEC_DRAM_BASE + 0x100000)
+
+#define BL32_BASE			BL32_DRAM_BASE
+#define BL32_LIMIT			BL32_DRAM_LIMIT
 
 /*
  * SCP_BL2 specific defines.

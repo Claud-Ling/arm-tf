@@ -136,7 +136,18 @@ unsigned long plat_get_ns_image_entrypoint(void)
 
 unsigned int plat_get_syscnt_freq2(void)
 {
-	//in HZ
-	//TODO: this need to be calibrated based on RGU register value
+#if SD_VELOCE
+	/*
+	 * in HZ
+	 * NOTE: this is only for clock calibration in veloce case but not recommended
+	 * for regular use, as it will lead to "rcu_sched self-detected stall" event
+	 * when boot linux for veloce runs thousands times slower than usual.
+	 */
+	return 7200;
+#else
+	/*
+	 * in HZ, fixed @24MHz
+	 */
 	return 24000000;
+#endif
 }
