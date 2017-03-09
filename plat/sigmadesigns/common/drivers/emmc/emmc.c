@@ -427,6 +427,12 @@
 #define sdhci_readw(a) (mmio_read_16(SDHC_REG(a)))
 #define sdhci_readb(a) (mmio_read_8(SDHC_REG(a)))
 
+/*
+ * tapdelay (out) helper macro
+ * make food for output tapdelay only
+ */
+#define MK_TAP_DELAY(val,d) (((val) & ~0x1fff) | (((d) & 0xf) << 8) | (1 << 12))
+
 struct emmc_cmd {
 	unsigned int cmdidx;
 	unsigned int resp_type;
@@ -911,13 +917,13 @@ static int emmc_init(void)
 	 * Derive tap delay value from OTP as ROM does
 	 */
 	tapdelay = fuse_read_field(emmc_ddr_timing);
-	sdhci_writel((sdhci_readl(0x400) & ~0x1fff) | 0x1000 | (tapdelay << 8), 0x400);
+	if (0 == tapdelay) tapdelay = SD_MMC_TAPDELAY;	/* in case OTP is not set */
 
+	sdhci_writel(MK_TAP_DELAY(sdhci_readl(0x400), tapdelay), 0x400);
 	sdhci_initialized = 1;
 
 error:
 	return ret;
-	
 }
 
 static int emmc_read(int ofs, uintptr_t buf, size_t size)

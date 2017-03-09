@@ -31,6 +31,4 @@ a53_cache_pd		 8  1 #A53 cache ram power down
 a53_ram_margin		 9  6 #reserved
 outstanding_16		15  1 #enable IP_1820 outstanding 16 mode
 gic_secure		16  1 #GIC register secure mode
-timestamp_clear		17  1
-timestamp_debug_halt	18  1 #timestamp counter halt enable by debug
 warmreq_disable		19  1 #Disable warm reset request from CPU

@@ -90,8 +90,12 @@ endfunc plat_sd_calc_core_pos
 	 * -----------------------------------------------------
 	 */
 func plat_get_my_entrypoint
+#if IMAGE_BL1
+	mov	x0, #0	/*TODO*/
+#else
 	adr	x1, sd_sec_entry_point
 	ldr	x0, [x1]
+#endif
 	ret
 endfunc plat_get_my_entrypoint
 
@@ -237,13 +241,16 @@ esr_str_el1:
 elr_str_el1:
 	.asciz "\nELR_EL1: "
 
-	.data
-	.align 3
-
 	/* --------------------------------------------------
 	 * CPU Secure entry point - resume from suspend
+	 *  The sd_sec_entry point is in the data section and not in .bss
+	 *  even though it is zero-init. In particular, this allows
+	 *  the plat_get_my_entrypoint functions to start using this variable before
+	 *  the runtime memory is initialized for images which do not
+	 *  need to copy the .data section from ROM to RAM.
 	 * --------------------------------------------------
 	 */
+.section .data.sd_sec_entry_point ; .align 3
 sd_sec_entry_point:
 	.quad	0
 
@@ -251,6 +258,7 @@ sd_sec_entry_point:
 	 * NS world's cold boot entry point
 	 * --------------------------------------------------
 	 */
+.section .data.ns_image_entrypoint ; .align 3
 ns_image_entrypoint:
 	.quad	0
 

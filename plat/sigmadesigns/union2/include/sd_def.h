@@ -130,6 +130,12 @@
  */
 #define SD_MMC_BASE			0xFB00A000
 #define SD_MMC_BOOT_SIZE		0x200000
+/*
+ * Local output tapdelay values
+ * By convention, tapdelay shall be derived from OTP
+ * Providing local value here just in case OTP is not set
+ */
+#define SD_MMC_TAPDELAY			0x6
 
 /*
  * NAND constants
