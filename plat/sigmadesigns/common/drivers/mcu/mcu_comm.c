@@ -57,6 +57,10 @@
 					((err) << MCOMM_CTRL1_err_SHIFT) |	\
 					((len) & ((1 << MCOMM_CTRL1_len_WIDTH) - 1)))
 
+/* CTLR1 log helpers */
+#define CTLR1FMT			"%-02s(%02x) frc:%d%d%d"
+#define CTLR1VAL(n)			#n, (n)->val, (n)->bits.f, (n)->bits.r, (n)->bits.c
+
 /*
  * mcomm data packet format:
  *
@@ -197,7 +201,8 @@ static void mips_request_mcu(unsigned len)
 	/* set ctrl1, M1.C = ~E1.R; */
 	m1 = (volatile union MCOMM_CTRL1Reg*) (MIPS_CTRLSEG_START + 1);
 	e1 = (volatile union MCOMM_CTRL1Reg*) (MCU_CTRLSEG_START + 1);
-	temp = MK_MCOMM_CTRL1(1, m1->bits.r, !e1->bits.c, 0, len);
+	VERBOSE("REQ dump CTLR1: "CTLR1FMT", "CTLR1FMT"\n", CTLR1VAL(m1), CTLR1VAL(e1));
+	temp = MK_MCOMM_CTRL1(1, m1->bits.r, !e1->bits.r, 0, len);
 	m1->val = temp;	/*set all bits in one write*/
 	dmbsy();
 
@@ -213,6 +218,7 @@ static void mips_response_mcu(void)
 	/* set ctrl1, M1.R = E1.C; */
 	m1 = (volatile union MCOMM_CTRL1Reg*)(MIPS_CTRLSEG_START + 1);
 	e1 = (volatile union MCOMM_CTRL1Reg*)(MCU_CTRLSEG_START + 1);
+	VERBOSE("RES dump CTLR1: "CTLR1FMT", "CTLR1FMT"\n", CTLR1VAL(m1), CTLR1VAL(e1));
 	if (e1->bits.f) {
 		m1->bits.f = 1;
 		m1->bits.r = e1->bits.c;
@@ -284,6 +290,10 @@ static int send_one_frame(mcu_comm_param_t * param)
 				ret = MCOMM_ETIME;
 				break;
 			}
+		} else if (ret < 0) {
+			WARN("sending mcu cmd %x error\n", pmcomm_drv->last_cmd);
+			ret = MCOMM_FAIL;
+			break;
 		}
 
 		stamp ++;
@@ -310,17 +320,22 @@ static int send_one_frame(mcu_comm_param_t * param)
  */
 int mcomm_get_mcu_cmd(uintptr_t ptr, size_t len, unsigned int timeout_ms)
 {
-	int i;
+	int i, ret;
 	unsigned char sum = 0;
 	mcu_comm_param_t params;
 	volatile union MCOMM_CTRL0Reg *e0;
 	volatile union MCOMM_CTRL1Reg *e1;
+	params.buf_len = 0;
 	e0 = (volatile union MCOMM_CTRL0Reg*)MCU_CTRLSEG_START;
 	e1 = (volatile union MCOMM_CTRL1Reg*)(MCU_CTRLSEG_START + 1);
 	do {
-		if (0 == wait_for_completion_timeout(check_mcu_request, NULL, timeout_ms)) {
+		ret = wait_for_completion_timeout(check_mcu_request, NULL, timeout_ms);
+		if (0 == ret) {
 			WARN("%s: timeout\n", __func__);
 			return MCOMM_ETIME;
+		} else if (ret < 0) {
+			WARN("%s: error\n", __func__);
+			return MCOMM_FAIL;
 		}
 		INFO("==> total:%d, stamp:%d, len:%d\n",
 			e0->bits.total, e0->bits.stamp, e1->bits.len);
