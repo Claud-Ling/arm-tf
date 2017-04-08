@@ -44,10 +44,10 @@
 	 * ---------------------------------------------------------------------
 	 */
 	/*
-	 * @SD patch: lock off I cache in case boot from NOR flash
+	 * @SD patch: lock off I cache from bl1 in case boot from NOR flash
 	 * This is due to NOR flash doesn't support burst access mode for now.
 	 */
-#if defined(SD_BOOTDEV) && (SD_BOOTDEV == SD_FLASH_NOR)
+#if defined(SD_BOOTDEV) && (SD_BOOTDEV == SD_FLASH_NOR) && IMAGE_BL1
 	mov	x1, #(SCTLR_A_BIT | SCTLR_SA_BIT)
 #else
 	mov	x1, #(SCTLR_I_BIT | SCTLR_A_BIT | SCTLR_SA_BIT)

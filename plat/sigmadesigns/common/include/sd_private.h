@@ -113,6 +113,51 @@ void sd_pman_set_protections(void);
 void sd_pman_drop_protections(void);
 void sd_soc_set_protections(void);
 
+typedef struct _ddr_block {
+	uintptr_t start;	/*inclusive*/
+	uintptr_t end;		/*exclusive*/
+}ddr_block_t;
+/*
+ * fn: int sd_soc_get_ddr_layout(ddr_block_t blobs[], int nb);
+ * return number of umacs on success with address space of
+ * each filled in array pointed by blobs, indexed by id.
+ * Otherwise return error code (<0).
+ */
+int sd_soc_get_ddr_layout(ddr_block_t blobs[], int nb);
+
+/*
+ * update pman security
+ * give a chance to update pman protection settings from outside (deprecated)
+ * <sz> bytes settings data shall be loaded to memory pointed by <tpa>
+ * input params:
+ * 	tpa	- physical address loaded with pman secure table, inclusive
+ * 	sz	- pman secure table length, exclusive
+ * return value:
+ *	PMAN_OK on success. Otherwise error code.
+ */
+int sd_pman_update_protections(const uint32_t tga, const uint32_t sz);
+
+#define MEM_STATE_MASK		0x1f	/* mask */
+#define MEM_STATE_S_RW		1	/* secure r/w mem */
+#define MEM_STATE_NS_RD		(1<<1)	/* non-secure readable mem */
+#define MEM_STATE_NS_WR		(1<<2)	/* non-secure writable mem */
+#define MEM_STATE_S_EXEC	(1<<3)	/* secure executable */
+#define MEM_STATE_NS_EXEC	(1<<4)	/* non-secure executable */
+/*
+ * check access state of specified memory range [pa, pa+sz)
+ * input params:
+ * 	pa	- memory block start physical address, inclusive
+ * 	sz	- memory block length, exclusive
+ * return a bit wise value:
+ *	bit[0]	- 1: secure accessible,   0: secure non-accessible
+ *	bit[1]	- 1: non-secure readable, 0: non-secure non-readable
+ *	bit[2]	- 1: non-secure writable, 0: non-secure non-writable
+ *	bit[3]	- 1: secure executable,   0: secure non-executable
+ *	bit[4]	- 1: ns executable,       0: non-secure non-executable
+ *	others	- reserved, should be RAZ
+ */
+int sd_pman_get_access_state(const uint32_t pa, const uint32_t sz);
+
 /*
  * Board configure
  */

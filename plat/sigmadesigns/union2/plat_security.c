@@ -29,7 +29,9 @@
  */
 
 #include <bl_common.h>
+#include <string.h>
 #include <platform_def.h>
+#include <sd_private.h>
 #include <dcsn_sec.h>
 #include <pman_sec.h>
 #include <cpu/a53_cfg.h>
@@ -50,4 +52,24 @@ void sd_soc_set_protections(void)
 	volatile union A53_CFGReg *cfg = (volatile union A53_CFGReg *)A53_CFG_REG;
 	cfg->val |= ((1 << A53_CFG_iram_secure_SHIFT) |
 		     (1 << A53_CFG_irom_secure_SHIFT));
+}
+
+/*
+ * fn: int sd_soc_get_ddr_layout(ddr_block_t blobs[], int nb);
+ * return number of umacs on success with address space of
+ * each filled in array pointed by blobs, indexed by id.
+ * Otherwise return error code (<0).
+ */
+int sd_soc_get_ddr_layout(ddr_block_t blobs[], const int nb)
+{
+	if (nb < CONFIG_SIGMA_NR_UMACS) {
+		ERROR("small buffer!\n");
+		return -1;
+	}
+	memset(blobs, 0, nb * sizeof(ddr_block_t));
+	/* UMAC0 */
+	blobs[0].start = 0x00000000;
+	blobs[0].end   = 0x40000000;
+	//TODO...
+	return 1;
 }

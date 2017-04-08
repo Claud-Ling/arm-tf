@@ -27,7 +27,7 @@
 	# Change '1' and empty values to "y" (not perfect, but
 	# supports conditional compilation in the makefiles
 	s/=$/=y/;
-	s/=1$/=y/;
+	#s/=1$/=y/;
 	# print the line
 	p
 }
@@ -53,7 +53,7 @@
 	# Change '1' and empty values to "y" (not perfect, but
 	# supports conditional compilation in the makefiles
 	s/=$/=y/;
-	s/=1$/=y/;
+	#s/=1$/=y/;
 	# print the line
 	p
 }

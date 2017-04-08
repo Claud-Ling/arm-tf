@@ -1,35 +1,33 @@
 # HOST_MAKE_C builds a C source file and generates the dependency file
 #   $(1) = output directory
 #   $(2) = source file (%.c)
-#   $(3) = tool name
 define HOST_MAKE_C
 
 $(eval OBJ := $(1)/$(patsubst %.c,%.o,$(notdir $(2))))
 
-$(OBJ): $(2) | $(3)_dirs
+# We use order-only prerequisite to ensure that directory are created,
+# but do not cause re-build every time a file is written.
+$(OBJ): $(2) | $(dir $(OBJ))
 	@echo "  HOSTCC  $$<"
-	$$(Q)gcc $$(CFLAGS) -g -Wall -c $$< -o $$@
+	$$(Q)gcc $$(CFLAGS) $$(CFLAGS_$(notdir $(OBJ))) -g -Wall -c $$< -o $$@
 endef
 
 # HOST_MAKE_OBJS builds C source files
 #   $(1) = output directory
 #   $(2) = list of source files
-#   $(3) = tool name
 define HOST_MAKE_OBJS
         $(eval C_OBJS := $(filter %.c,$(2)))
-        $(eval $(foreach obj,$(C_OBJS),$(call HOST_MAKE_C,$(1),$(obj),$(3))))
+        $(eval $(foreach src,$(C_OBJS),$(call HOST_MAKE_C,$(1),$(src))))
 endef
 
-# HOST_MAKE_TOOL defines the targets and options to build host tool
+# HOST_MAKE_PREREQ defines the prerequisite targets and options to build host tools
 # Arguments:
-#   $(1) = tool name
-#   $(2) = tool build path
-define HOST_MAKE_TOOL
-        $(eval BUILD_DIR  := $(2))
-	$(eval SOURCES	  := $($(call uppercase,$(1))_SOURCES))
+#   $(1) = sources
+#   $(2) = build path
+define HOST_MAKE_PREREQ
+	$(eval BUILD_DIR  := $(2))
+	$(eval SOURCES    := $(1))
         $(eval OBJS       := $(addprefix $(BUILD_DIR)/,$(call SOURCES_TO_OBJS,$(SOURCES))))
-	$(eval ELF	  := $(call addprefix,${BUILD_DIR}/,$(1)))
-	$(eval TARGET	  := $(1))
 
         # We use sort only to get a list of unique object directory names.
         # ordering is not relevant but sort removes duplicates.
@@ -39,18 +37,29 @@ define HOST_MAKE_TOOL
         # This gives names suitable for use as make rule targets.
         $(eval OBJ_DIRS   := $(subst /.,,$(addsuffix .,$(TEMP_OBJ_DIRS))))
 
-# Create generators for object directory structure
-$(eval $(foreach objd,${OBJ_DIRS},$(call MAKE_PREREQ_DIR,${objd})))
+	# Create generators for object directory structure
+	$(eval $(foreach objd,${OBJ_DIRS},$(call MAKE_PREREQ_DIR,${objd})))
 
-.PHONY : ${1}_dirs
+	# Targets to build objects
+	$(eval $(call HOST_MAKE_OBJS,$(BUILD_DIR),$(SOURCES)))
 
-# We use order-only prerequisites to ensure that directories are created,
-# but do not cause re-builds every time a file is written.
-${1}_dirs: | ${OBJ_DIRS}
+endef
 
-$(eval $(call HOST_MAKE_OBJS,$(BUILD_DIR),$(SOURCES),$(1)))
+# HOST_MAKE_TOOL defines the targets and options to build host tool
+# Arguments:
+#   $(1) = tool name
+#   $(2) = tool build path
+define HOST_MAKE_TOOL
+	$(eval BUILD_DIR  := $(2))
+	$(eval SOURCES	  := $($(call uppercase,$(1))_SOURCES))
+	$(eval PREREQS	  := $($(call uppercase,$(1))_PREREQS))
+	$(eval OBJS       := $(addprefix $(BUILD_DIR)/,$(call SOURCES_TO_OBJS,$(SOURCES))))
+	$(eval ELF	  := $(call addprefix,${BUILD_DIR}/,$(1)))
+	$(eval TARGET	  := $(1))
 
-$(ELF) : $(OBJS) | $(1)_dirs
+$(OBJS) : $(PREREQS)
+
+$(ELF) : $(OBJS)
 	@echo "  GEN     $$@"
 	$$(Q)gcc $$(CFLAGS) $(OBJS) -o $$@
 
@@ -109,9 +118,9 @@ define filechk_bin2h
 	 echo "extern \"C\" {";	\
 	 echo "#endif";	\
 	 echo "";	\
-	 echo "static const unsigned char $(3)[$(4)] = {";	\
+	 echo "static const unsigned char $(3)[$(4)] $(5) = {";	\
 	 od -v -An -tx1 -w8 $(2) | sed 's/\([[:alnum:]]\+\)/0x\1,/g';	\
-	 echo "};$(5)"; \
+	 echo "};"; \
 	 echo "";	\
 	 $(6)		\
 	 echo "";	\

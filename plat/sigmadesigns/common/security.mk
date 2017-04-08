@@ -41,14 +41,16 @@ $(pmansec_header) : $(pmansec_file) ${SD_PLAT_COM}/tools/perl/pmansec.pl
 .PHONY : sd-pmansec
 sd-pmansec : $(pmansec_header)
 
+include ${SD_PLAT_COM}/drivers/pman/pman.mk
+
 SD_SEC_SOURCES	:=	${SD_PLAT_COM}/drivers/dcsn/dcsn_sec.c	\
-			${SD_PLAT_COM}/drivers/pman/pman_sec.c	\
-			${SD_PLAT_COM}/sd_security.c
+			${SD_PLAT_COM}/sd_security.c		\
+			${SD_PMAN_SOURCES}
 
 #Dependencies
 ${SD_PLAT_COM}/drivers/dcsn/dcsn_sec.c : sd-dcsnsec
 
-${SD_PLAT_COM}/drivers/pman/pman_sec.c : sd-pmansec
+${SD_PMAN_SOURCES} : sd-pmansec
 
 #Flags
 SECURE		:=	1

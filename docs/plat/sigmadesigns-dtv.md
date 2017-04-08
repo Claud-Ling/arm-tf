@@ -68,6 +68,13 @@ to the build command line.
     Boolean flag that is used to turn on veloce option within firmware.
     Default 0.
 
+*   **CONFIG_PMAN**
+    Boolean flag that is used to force reconfigure PMAN settings. Default 0.
+
+*   **PMAN_TABLE**
+    Defines path to pman_table root. A menu for pman setting selection will pop up
+    based on it when 'CONFIG_PMAN=1' or pman setting has not been configured yet.
+
 Power management
 ----------------
 

@@ -1,5 +1,4 @@
 
-include ${SD_PLAT_COM}/drivers/ddr/tools/tools.mk
 -include $(autoconf-mk)
 
 #
@@ -20,6 +19,7 @@ endif
 
 ddrconfig-script	:=	${SD_PLAT_COM}/drivers/ddr/scripts/ddr_configure.sh
 ddresolve-script	:=	${SD_PLAT_COM}/drivers/ddr/scripts/resolve_setting.sh
+ddrgroup-config		:=	${SD_PLAT_COM}/drivers/ddr/config.ini
 ddrsetting-file		:=	${SD_BUILD_GEN}/tuning.dat
 ddrsetting-bin		:=	${SD_BUILD_GEN}/ddrsetting.bin
 ddrsetting-header	:=	${SD_BUILD_GEN}/ddrsetting.h
@@ -27,6 +27,10 @@ ddrtable-conf		:=	${SD_BUILD_GEN}/ddr_table_selection
 ddrtable-root		:=	${DDR_TABLE}
 
 #
+# configure ddr settings, in priority:
+#   1. force ddrconfig-script
+#   2. use SD_PLAT_DDR_FILE
+#   3. ddrconfig-script
 # Arguments:
 #   $(1) = path to ddr_table
 #   $(2) = ddrtable configure file
@@ -37,6 +41,9 @@ define config_ddrsetting
 	$(Q)set -e;	\
 	if [ ${CONFIG_DDR} -eq 1 ]; then	\
 		$(ddrconfig-script) $(1) $(2) $(3) config-ddr;	\
+	elif [ -e $(SD_PLAT_DDR_FILE) ]; then	\
+		echo "/$(notdir $(SD_PLAT_DDR_FILE))" > $(ddrtable-conf);	\
+		cp $(SD_PLAT_DDR_FILE) $(ddrsetting-file);	\
 	else	\
 		$(ddrconfig-script) $(1) $(2) $(3);	\
 	fi
@@ -51,14 +58,14 @@ define resolve_name
 	${ddresolve-script} $(1);
 endef
 
-$(ddrsetting-file) : $(ddrconfig-script) $(FORCED_DDR_CONFIG)
+$(ddrsetting-file) : $(ddrconfig-script) $(SD_PLAT_DDR_FILE) $(FORCED_DDR_CONFIG)
 	$(Q)mkdir -p $(dir $@)
 	$(call config_ddrsetting,$(ddrtable-root),$(ddrtable-conf),$(ddrsetting-file))
 
 $(ddrsetting-bin) : $(ddrsetting-file) ${SD_BUILD_TOOL}/${GENREGTABLE}
 	$(Q)set -e;	\
 	mkdir -p $(dir $@);	\
-	${SD_BUILD_TOOL}/${GENREGTABLE}  -g ${SD_PLAT_COM}/drivers/ddr/tools/config.ini	\
+	${SD_BUILD_TOOL}/${GENREGTABLE}  -g ${ddrgroup-config}	\
 					-p 0 -c 1000 -m 800 $< $@;
 
 $(ddrsetting-header) : $(ddrsetting-bin) $(resolve-script) $(autoconf-mk)

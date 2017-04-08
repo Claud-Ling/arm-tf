@@ -198,7 +198,14 @@
  * PMAN constants
  */
 #define SD_PMAN_SEC0_BASE		0xF5005000
-#define PMAN_SEC_GROUP_MAX		CONFIG_SIGMA_NR_UMACS
+#define SD_PMAN_NR_GRPS			1
+#define SD_PMAN_NR_RGNS			32	/*per group*/
+#define SD_PST_ALIGN			16	/*alignment*/
+#define SD_PST_SIZE			528 /*((SD_PMAN_NR_GRPS * SD_PMAN_NR_RGNS + 1) << 4)*/
+
+#if (SD_PMAN_NR_GRPS != CONFIG_SIGMA_NR_UMACS)
+  #error "SD_PMAN_NR_GRPS != CONFIG_SIGMA_NR_UMACS"
+#endif
 
 /*
  * Standby constants

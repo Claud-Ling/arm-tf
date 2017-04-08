@@ -11,32 +11,36 @@
 #include <bl_common.h>
 #include <platform_def.h>
 #include <assert.h>
-#include <pman_sec.h>
-
-DECLARE_PMAN_SEC_GROUPS;
-
-static int pman_get_group(unsigned long start, size_t sz)
-{
-	/*
-	 * secure DRAM. Assume it's on umac0
-	 * TODO: identify SEC DRAM location
-	 */
-	assert(start >= 0 && (start + sz) < 0x40000000);
-	return 0;
-}
+#include <sd_private.h>
+#include "pman_sec_private.h"
 
 void sd_pman_set_protections(void)
 {
-	uint32_t sec = PMAN_RGN_SEC_ARM_SEC | PMAN_RGN_SEC_TURING | PMAN_RGN_SEC_CRYPTO;
-	uint32_t attr = PMAN_RGN_ATTR_WRITE | PMAN_RGN_ATTR_EXEC | PMAN_RGN_ATTR_READ | PMAN_RGN_ATTR_VALID;
-
-	pman_sec_region_set(pman_get_group(SD_SEC_DRAM_BASE, SD_SEC_DRAM_SIZE), 0,
-			    SD_SEC_DRAM_BASE, SD_SEC_DRAM_BASE + SD_SEC_DRAM_SIZE - 1,
-			    sec, attr);
+	int ret;
+	ret = pman_set_protections();
+	assert((pman_get_access_state(SD_SEC_DRAM_BASE, SD_SEC_DRAM_SIZE) & MEM_STATE_MASK)
+		 == (MEM_STATE_S_RW | MEM_STATE_S_EXEC));
+	assert(ret == PMAN_OK);
+	(void)ret;
 }
 
 void sd_pman_drop_protections(void)
 {
+#ifndef WITH_PROD
+	pman_drop_protections();
+#endif
 }
 
+int sd_pman_update_protections(const uint32_t tpa, const uint32_t sz)
+{
+#ifndef WITH_PROD
+	return pman_update_protections(tpa, sz);
+#else
+	return PMAN_NOT_SUPPORT;
+#endif
+}
 
+int sd_pman_get_access_state(const uint32_t pa, const uint32_t sz)
+{
+	return pman_get_access_state(pa, sz);
+}

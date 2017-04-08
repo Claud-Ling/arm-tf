@@ -38,11 +38,20 @@ include ${SD_PLAT_COM}/make/config.mk
 # Proceed bitfields
 include ${SD_PLAT_COM}/make/bitfields.mk
 
+# Proceed tools
+include ${SD_PLAT_COM}/tools/tools.mk
+
 # Proceed top level build flags
 # By default, SCP images are needed.(TODO: disable it for less boot pain for now)
 SD_LOAD_SCP_IMAGES	:=	0
 # By default, SCP boot in BL33 and is not needed here
 SD_BOOT_SCP		:=	0
+
+# Proceed debug flag
+ifeq (${DEBUG}, 0)
+  SD_WITH_PROD		:=	1
+  $(eval $(call add_define_val,WITH_PROD,$(SD_WITH_PROD)))
+endif
 
 # Add __ATF__ flag for sigma
 __ATF__	:= 1
@@ -135,6 +144,8 @@ STORAGE			:=	emmc
 #Other options
 DEBUG_EMMC		:=	0
 DUMMY_EMMC		:=	0
+SD_DEBUG_EMMC		:=	$(DEBUG_EMMC)
+SD_DUMMY_EMMC		:=	$(DUMMY_EMMC)
 
 ifeq (${BOOTDEV}, emmc)
   SD_BOOTDEV		:=	${SD_FLASH_MMC}

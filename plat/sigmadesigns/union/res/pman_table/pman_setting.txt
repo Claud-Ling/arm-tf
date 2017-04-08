@@ -1,0 +1,40 @@
+######### PMAN Memory protect setting##############
+### PMAN entry format
+### <p> <id> <addr> <len>   <sec>    <attr>
+## <p> 	 should be 'p' or 'P', standing for one PMAN protection entry
+## <id> 	 specifies umac id, starting from 0. now we have three umacs for sx7, so its value could be 0,1,2
+## <addr> specifies the start addr of one region, in heximal
+## <len>  specifies byte length of one region, in heximal
+## <sec>  specifies secure settings for all security group (check PMAN SPG), in heximal
+## <attr> specifies attribute of one region, in heximal. Its description is below
+##	[31:17]: reserved
+##	[16]: WRITE
+##	    0: Region blocks write commands
+##	    1: Region allows write commands
+##	[15:13]: reserved
+##	[12]: EXEC
+##	    0: Region blocks executable read commands
+##	    1: Region allows executable read commands
+##	[11:9]: reserved
+##	[8]: READ
+##	    0: Region blocks read-as-data commands
+##	    1: Region allows read-as-data commands
+##	[7:5]: reserved
+##	[4]: CONTENT
+##	    0: Region blocks content commands
+##	    1: Region allows content commands
+##	[3:1]: reserved
+##	[0]: VALID
+##	    0: Region is not valid.
+##	    1: Region is valid.
+##
+## umac0-IP1040
+
+# TEE memory (256M--272M)
+#0	TEE ShMem 256M--258M (secure and non-secure accessible)
+p 0 10000000 00200000 0000600C 11101
+
+#1	TEE	258M--272M (secure accessible only)
+p 0 10200000 00E00000 00006004 11101
+
+######### The above is only for PMAN setting#####

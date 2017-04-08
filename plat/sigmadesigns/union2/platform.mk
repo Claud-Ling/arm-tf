@@ -42,6 +42,10 @@ ifeq ($(SPD),opteed)
 BL32			:=	$(SD_PLAT_SOC)/prebuild/tee.bin
 endif
 
+# platform specific settings file (must be set before include sd_common.mk)
+SD_PLAT_PMAN_FILE	:=	${SD_PLAT_SOC}/res/pman_table/pman_setting.txt
+SD_PLAT_DDR_FILE	:=	${SD_PLAT_SOC}/res/ddr_table/PLL_ARM24m-DDR_2g-PANEL_lvds_none-OTH_veloce2_umac01_NI.txt
+
 include ${SD_PLAT_COM}/sd_common.mk
 
 BL1_SOURCES		+=	lib/cpus/aarch64/cortex_a53.S			\

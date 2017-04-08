@@ -23,8 +23,6 @@
 #ifndef __PMAN_SEC_H__
 #define __PMAN_SEC_H__
 
-#define PMAN_REGION_MAX		32 /*32 regions*/
-
 /*
  * attributes
  */
@@ -36,6 +34,10 @@
 
 #define LOG2_PMAN_REGION_GRANULARITY	12
 #define PMAN_REGION_GRANULARITY		(1 << LOG2_PMAN_REGION_GRANULARITY)
+
+#include <pman_sec_tab.h>
+
+#ifndef __ASSEMBLY__
 
 struct pman_sec {
 	volatile uint32_t addr_mask;		/* +0x00000000 */
@@ -202,4 +204,5 @@ extern struct pman_sec *pPMAN_SEC_groups[PMAN_SEC_GROUP_MAX]
 		func(pman_sec_region(_g, _i), v);			\
 }while(0)
 
-#endif
+#endif /*!__ASSEMBLY__*/
+#endif /*__PMAN_SEC_H__*/
