@@ -53,7 +53,8 @@ ${SD_PLAT_COM}/drivers/dcsn/dcsn_sec.c : sd-dcsnsec
 ${SD_PMAN_SOURCES} : sd-pmansec
 
 #Flags
-SECURE		:=	1
+#Default to off
+SECURE		:=	0
 $(eval $(call assert_boolean,SECURE))
 SD_SECURE	:=	$(SECURE)
 $(eval $(call add_define,SD_SECURE))

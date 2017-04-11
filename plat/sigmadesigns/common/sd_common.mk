@@ -206,15 +206,16 @@ $(eval $(call add_define,SD_STORAGE))
 include ${SD_PLAT_COM}/drivers/ddr/ddr.mk
 BL1_SOURCES		+=	${SD_DDR_SOURCES}
 
-# Proceed otp stuffs
-include ${SD_PLAT_COM}/drivers/otp/otp.mk
-BL1_SOURCES		+=	${SD_OTP_SOURCES}
-BL2_SOURCES		+=	${SD_OTP_SOURCES}
-
 # Proceed security stuffs
 include ${SD_PLAT_COM}/security.mk
 BL1_SOURCES		+=	${SD_SEC_SOURCES}
 BL31_SOURCES		+=	${SD_SEC_SOURCES}
+
+# Proceed otp stuffs
+include ${SD_PLAT_COM}/drivers/otp/otp.mk
+BL1_SOURCES		+=	${SD_OTP_SOURCES}
+BL2_SOURCES		+=	${SD_OTP_SOURCES}
+BL31_SOURCES		+=	${SD_OTP_SOURCES}
 
 # Proceed SCP stuffs
 include ${SD_PLAT_COM}/drivers/mcu/mcu.mk

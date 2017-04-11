@@ -31,6 +31,7 @@
 #include <bl_common.h>
 #include <platform_def.h>
 #include <sd_private.h>
+#include <sd_otp.h>
 
 /******************************************************************************
  * The following functions are defined as weak to allow a platform to override
@@ -47,9 +48,14 @@ void sd_soc_set_protections(void)
  */
 void plat_sd_security_setup(void)
 {
+	int forced = 0;
 #if SD_SECURE
-	sd_pman_set_protections();
-	sd_dcsn_set_protections();
-	sd_soc_set_protections();
+	forced = 1;	/* force on */
 #endif
+	sd_pman_set_protections();
+	sd_soc_set_protections();
+	/* put bus protection on in case of secured board or forced */
+	if (forced || fuse_read_field(sec_boot_en)) {
+		sd_dcsn_set_protections();
+	}
 }

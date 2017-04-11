@@ -61,8 +61,8 @@ to the build command line.
     Boolean flag that is used to turn on debug within ddr driver. Default 0.
 
 *   **SECURE**
-    Boolean flag that is used to turn on security protections within firmware.
-    Default 1.
+    Boolean flag that is used to force on bus protections within firmware.
+    Default 0.
 
 *   **VELOCE**
     Boolean flag that is used to turn on veloce option within firmware.
