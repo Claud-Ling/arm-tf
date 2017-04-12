@@ -135,7 +135,7 @@
  * By convention, tapdelay shall be derived from OTP
  * Providing local value here just in case OTP is not set
  */
-#define SD_MMC_TAPDELAY			0x6
+#define SD_MMC_TAPDELAY			0x2
 
 /*
  * NAND constants
