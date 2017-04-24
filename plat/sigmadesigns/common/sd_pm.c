@@ -161,6 +161,13 @@ void sd_pwr_domain_on_finish(const psci_power_state_t *target_state)
 	//TODO: Shall we recover security settings right here?!
 
 	/*
+	 * Reset mailbox register
+	 * This function is called with psci lock acquired so we are free from
+	 * race condition.
+	 */
+	sd_reset_mailbox();
+
+	/*
 	 * Reset hardware settings.
 	 */
 	sd_soc_pwr_domain_on_finish(target_state);
@@ -184,6 +191,51 @@ void sd_pwr_domain_suspend_finish(const psci_power_state_t *target_state)
 	 * Program the gic per-cpu distributor or re-distributor interface.
 	 */
 	plat_sd_gic_cpuif_enable();
+}
+
+/*******************************************************************************
+ * This is an optional function and, if implemented, is expected to perform
+ * platform specific actions including the `wfi` invocation which allows the
+ * CPU to powerdown. Since this function is invoked outside the PSCI locks,
+ * the actions performed in this hook must be local to the CPU or the platform
+ * must ensure that races between multiple CPUs cannot occur.
+
+ * The `target_state` has a similar meaning as described in the `pwr_domain_off()`
+ * operation and it encodes the platform coordinated target local power states for
+ * the CPU power domain and its parent power domain levels. This function must
+ * not return back to the caller.
+ *
+ * We use plat_secondary_cold_boot_setup to implement pwr_domain_pwr_down_wfi here
+ * as the calling in core may not experience power lose before back to life, i.e.
+ * cpu hotplug. This is because we don't have any core oriented pmu at all.
+ ******************************************************************************/
+__dead2 void sd_pwr_domain_pwr_down_wfi(const psci_power_state_t *target_state)
+{
+	/*
+	 * drain the write buffer
+	 */
+	dsb();
+
+	/*
+	 * disable mmu and dcache as required by plat_secondary_cold_boot_setup
+	 */
+#ifdef AARCH32
+	disable_mmu_secure();
+#else
+	disable_mmu_el3();
+#endif
+
+	/*
+	 * Zzzzzz
+	 * At this point mmu and dcache are both disabled, so we are ok to call
+	 * plat_secondary_cold_boot_setup
+	 */
+	plat_secondary_cold_boot_setup();
+
+	/*
+	 * shall never reach here, lead to panic whatever
+	 */
+	plat_panic_handler();
 }
 
 /*******************************************************************************
@@ -281,6 +333,7 @@ static const plat_psci_ops_t sd_plat_psci_ops = {
 	.pwr_domain_suspend		= sd_pwr_domain_suspend,
 	.pwr_domain_on_finish		= sd_pwr_domain_on_finish,
 	.pwr_domain_suspend_finish	= sd_pwr_domain_suspend_finish,
+	.pwr_domain_pwr_down_wfi	= sd_pwr_domain_pwr_down_wfi,
 	.system_off			= sd_system_off,
 	.system_reset			= sd_system_reset,
 	.validate_power_state		= sd_validate_power_state,

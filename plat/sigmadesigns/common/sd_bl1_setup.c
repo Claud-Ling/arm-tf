@@ -35,6 +35,7 @@
 #include <console.h>
 #include <platform_def.h>
 #include <sd_private.h>
+#include <xlat_tables.h>
 #include "../../bl1/bl1_private.h"
 
 /* Data structure which holds the extents of the trusted SRAM for BL1*/
@@ -94,10 +95,24 @@ void bl1_plat_arch_setup(void)
 {
 /* Not enable mmu for SPI boot case, for nor flash doesn't support burst access */
 #if (SD_BOOTDEV != SD_FLASH_NOR)
-	sd_configure_mmu_el3(bl1_tzram_layout.total_base,
+	sd_setup_page_tables(bl1_tzram_layout.total_base,
 			     bl1_tzram_layout.total_size,
-			     BL1_RO_BASE, BL1_RO_LIMIT);
+			     BL_CODE_BASE,
+			     BL1_CODE_LIMIT,
+			     BL1_RO_DATA_BASE,
+			     BL1_RO_DATA_LIMIT
+#if USE_COHERENT_MEM
+			     , BL_COHERENT_RAM_BASE,
+			     BL_COHERENT_RAM_LIMIT
 #endif
+			     );
+#ifdef AARCH32
+	enable_mmu_secure(0);
+#else
+	enable_mmu_el3(0);
+#endif /* AARCH32 */
+
+#endif /* SD_BOOTDEV != SD_FLASH_NOR */
 }
 
 /*

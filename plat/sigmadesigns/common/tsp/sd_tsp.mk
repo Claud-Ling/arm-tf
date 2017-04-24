@@ -28,8 +28,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-SD_PLAT			:=	plat/sigmadesigns
-SD_PLAT_SOC		:=	${SD_PLAT}/${PLAT}
-SD_PLAT_COM		:=	${SD_PLAT}/common
+# TSP source files common to SD standard platforms
+BL32_SOURCES		+=	plat/common/aarch64/platform_mp_stack.S		\
+				$(SD_PLAT_COM)/tsp/sd_tsp_setup.c		\
+				$(SD_GIC_SOURCES)
 
-include $(SD_PLAT_COM)/tsp/sd_tsp.mk

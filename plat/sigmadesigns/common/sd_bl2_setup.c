@@ -38,22 +38,7 @@
 #include <platform_def.h>
 #include <string.h>
 #include <sd_private.h>
-
-/*******************************************************************************
- * Declarations of linker defined symbols which will help us find the layout
- * of trusted SRAM
- ******************************************************************************/
-unsigned long __RO_START__;
-unsigned long __RO_END__;
-
-/*
- * The next 2 constants identify the extents of the code & RO data region.
- * These addresses are used by the MMU setup code and therefore they must be
- * page-aligned.  It is the responsibility of the linker script to ensure that
- * __RO_START__ and __RO_END__ linker symbols refer to page-aligned addresses.
- */
-#define BL2_RO_BASE (unsigned long)(&__RO_START__)
-#define BL2_RO_LIMIT (unsigned long)(&__RO_END__)
+#include <xlat_tables.h>
 
 static meminfo_t bl2_tzram_layout __aligned(CACHE_WRITEBACK_GRANULE);
 
@@ -262,10 +247,22 @@ void bl2_early_platform_setup(meminfo_t *mem_layout)
 
 void bl2_plat_arch_setup(void)
 {
-	sd_configure_mmu_el1(bl2_tzram_layout.total_base,
+	sd_setup_page_tables(bl2_tzram_layout.total_base,
 			     bl2_tzram_layout.total_size,
-			     BL2_RO_BASE,
-			     BL2_RO_LIMIT);
+			     BL_CODE_BASE,
+			     BL_CODE_LIMIT,
+			     BL_RO_DATA_BASE,
+			     BL_RO_DATA_LIMIT
+#if USE_COHERENT_MEM
+			     , BL_COHERENT_RAM_BASE,
+			     BL_COHERENT_RAM_LIMIT
+#endif
+			     );
+#ifdef AARCH32
+	enable_mmu_secure(0);
+#else
+	enable_mmu_el1(0);
+#endif /* AARCH32 */
 }
 
 void bl2_platform_setup(void)

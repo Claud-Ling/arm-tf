@@ -31,16 +31,31 @@
 #include <arch_helpers.h>
 #include <bl_common.h>
 #include <mmio.h>
+#include <assert.h>
 #include <debug.h>
 #include <platform_def.h>
 #include <sd_private.h>
 
+/*
+ * it's the caller's responsibility to ensure no race condition
+ * among multiple cores.
+ */
 void sd_wakeup_secondary(uintptr_t entry, int core)
 {
 	/*Ring bells*/
 	uint32_t tmp;
+	assert(entry != 0);
 	tmp = MK_AUX_BOOT_VAL(entry, core);
 	mmio_write_32(AUX_BOOT_ADDR_REG, tmp);
 	sev();
 	return;
+}
+
+/*
+ * it's the caller's responsibility to ensure no race condition
+ * among multiple cores.
+ */
+void sd_reset_mailbox(void)
+{
+	mmio_write_32(AUX_BOOT_ADDR_REG, 0);
 }

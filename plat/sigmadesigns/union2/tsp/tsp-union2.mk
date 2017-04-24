@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2015, ARM Limited and Contributors. All rights reserved.
+# Copyright (c) 2017, ARM Limited and Contributors. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -28,7 +28,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-# TSP source files common to ARM standard platforms
-BL32_SOURCES		+=	plat/common/aarch64/platform_mp_stack.S		\
-				${SD_PLAT_SOC}/tsp/sd_tsp_setup.c		\
-				${SD_GIC_SOURCES}
+SD_PLAT			:=	plat/sigmadesigns
+SD_PLAT_SOC		:=	${SD_PLAT}/${PLAT}
+SD_PLAT_COM		:=	${SD_PLAT}/common
+
+include $(SD_PLAT_COM)/tsp/sd_tsp.mk

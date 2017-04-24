@@ -38,22 +38,9 @@
 #include <gicv3.h>
 #include <platform_def.h>
 #include <sd_private.h>
+#include <xlat_tables.h>
 
-/*******************************************************************************
- * Declarations of linker defined symbols which will help us find the layout
- * of trusted SRAM
- ******************************************************************************/
-unsigned long __RO_START__;
-unsigned long __RO_END__;
-
-/*
- * The next 2 constants identify the extents of the code & RO data region.
- * These addresses are used by the MMU setup code and therefore they must be
- * page-aligned.  It is the responsibility of the linker script to ensure that
- * __RO_START__ and __RO_END__ linker symbols refer to page-aligned addresses.
- */
-#define BL31_RO_BASE (unsigned long)(&__RO_START__)
-#define BL31_RO_LIMIT (unsigned long)(&__RO_END__)
+#define BL31_END (uintptr_t)(&__BL31_END__)
 
 static entry_point_info_t bl32_ep_info;
 static entry_point_info_t bl33_ep_info;
@@ -77,6 +64,11 @@ void bl31_early_platform_setup(bl31_params_t *from_bl2,
 	console_init(SD_BOOT_UART_BASE, SD_UART_CLK_HZ, SD_UART_BAUDRATE);
 
 	/*
+	 * Initial timer
+	 */
+	sd_timer_init();
+
+	/*
 	 * Copy BL3-2 and BL3-3 entry point information.
 	 * They are stored in Secure RAM, in BL2's address space.
 	 */
@@ -86,10 +78,18 @@ void bl31_early_platform_setup(bl31_params_t *from_bl2,
 
 void bl31_plat_arch_setup(void)
 {
-	sd_configure_mmu_el3(BL31_BASE,
-			     BL31_LIMIT - BL31_BASE,
-			     BL31_RO_BASE,
-			     BL31_RO_LIMIT);
+	sd_setup_page_tables(BL31_BASE,
+			     BL31_END - BL31_BASE,
+			     BL_CODE_BASE,
+			     BL_CODE_LIMIT,
+			     BL_RO_DATA_BASE,
+			     BL_RO_DATA_LIMIT
+#if USE_COHERENT_MEM
+			     , BL_COHERENT_RAM_BASE,
+			     BL_COHERENT_RAM_LIMIT
+#endif
+			      );
+	enable_mmu_el3(0);
 }
 
 void bl31_platform_setup(void)

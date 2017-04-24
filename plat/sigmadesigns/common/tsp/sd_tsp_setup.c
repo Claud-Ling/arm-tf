@@ -33,28 +33,14 @@
 #include <platform_def.h>
 #include <platform_tsp.h>
 #include <sd_private.h>
+#include <xlat_tables.h>
 
-/*******************************************************************************
- * Declarations of linker defined symbols which will help us find the layout
- * of trusted SRAM
- ******************************************************************************/
-unsigned long __RO_START__;
-unsigned long __RO_END__;
-
-/*
- * The next 2 constants identify the extents of the code & RO data region.
- * These addresses are used by the MMU setup code and therefore they must be
- * page-aligned.  It is the responsibility of the linker script to ensure that
- * __RO_START__ and __RO_END__ linker symbols refer to page-aligned addresses.
- */
-#define BL32_RO_BASE (unsigned long)(&__RO_START__)
-#define BL32_RO_LIMIT (unsigned long)(&__RO_END__)
+#define BL32_END (unsigned long)(&__BL32_END__)
 
 /* Weak definitions may be overridden in specific platform */
 #pragma weak tsp_early_platform_setup
 #pragma weak tsp_platform_setup
 #pragma weak tsp_plat_arch_setup
-
 
 /*******************************************************************************
  * Initialize the UART
@@ -65,7 +51,6 @@ void tsp_early_platform_setup(void)
 	console_init(SD_BOOT_UART_BASE,
 		     SD_UART_CLK_HZ,
 		     SD_UART_BAUDRATE);
-
 }
 
 /*******************************************************************************
@@ -82,8 +67,16 @@ void tsp_platform_setup(void)
  ******************************************************************************/
 void tsp_plat_arch_setup(void)
 {
-	sd_configure_mmu_el1(BL32_BASE,
-			     BL32_LIMIT - BL32_BASE,
-			     BL32_RO_BASE,
-			     BL32_RO_LIMIT);
+	sd_setup_page_tables(BL32_BASE,
+			     BL32_END - BL32_BASE,
+			     BL_CODE_BASE,
+			     BL_CODE_LIMIT,
+			     BL_RO_DATA_BASE,
+			     BL_RO_DATA_LIMIT
+#if USE_COHERENT_MEM
+			     , BL_COHERENT_RAM_BASE,
+			     BL_COHERENT_RAM_LIMIT
+#endif
+			     );
+	enable_mmu_el1(0);
 }

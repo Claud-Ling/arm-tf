@@ -53,11 +53,25 @@
 #define SD_ALIGNTO(x, a) ((x) & ~((a) - 1))
 #define SD_ALIGNTONEXT(x, a) (((x) + (a) - 1) & ~((a) - 1))
 
-void sd_configure_mmu_el1(unsigned long total_base, unsigned long total_size,
-			  unsigned long ro_start, unsigned long ro_limit);
+#if USE_COHERENT_MEM
+/*
+ * The next 2 constants identify the extents of the coherent memory region.
+ * These addresses are used by the MMU setup code and therefore they must be
+ * page-aligned.  It is the responsibility of the linker script to ensure that
+ * __COHERENT_RAM_START__ and __COHERENT_RAM_END__ linker symbols refer to
+ * page-aligned addresses.
+ */
+#define BL_COHERENT_RAM_BASE (unsigned long)(&__COHERENT_RAM_START__)
+#define BL_COHERENT_RAM_LIMIT (unsigned long)(&__COHERENT_RAM_END__)
+#endif
 
-void sd_configure_mmu_el3(unsigned long total_base, unsigned long total_size,
-			  unsigned long ro_start, unsigned long ro_limit);
+void sd_setup_page_tables(uintptr_t total_base, size_t total_size,
+			  uintptr_t code_start, uintptr_t code_limit,
+			  uintptr_t ro_start, uintptr_t ro_limit
+#if USE_COHERENT_MEM
+			  , uintptr_t coh_start, uintptr_t coh_limit
+#endif
+			  );
 
 int sd_soc_pinshare_init_for_mmc(int id);
 int32_t sd_soc_validate_power_state(unsigned int power_state,
@@ -73,7 +87,9 @@ int sd_boot_load_raw_image(uintptr_t image_spec, uintptr_t image_base, size_t im
 
 int sd_ddr_init(void);
 
+void plat_secondary_cold_boot_setup(void);
 void sd_wakeup_secondary(uintptr_t entry, int core);
+void sd_reset_mailbox(void);
 
 int sd_relocate_mcu(void *img, unsigned int img_size);
 

@@ -68,29 +68,27 @@ PLAT_BL_COMMON_SOURCES	:=	lib/xlat_tables/xlat_tables_common.c		\
 				lib/xlat_tables/aarch64/xlat_tables.c		\
 				plat/common/aarch64/plat_common.c		\
 				drivers/console/aarch64/console.S		\
+				drivers/delay_timer/delay_timer.c		\
 				${SD_PLAT_COM}/drivers/uart/aarch64/uart.S	\
 				${SD_PLAT_COM}/aarch64/sd_helpers.S		\
-				${SD_PLAT_COM}/aarch64/sd_common.c
+				${SD_PLAT_COM}/sd_common.c			\
+				${SD_PLAT_COM}/drivers/timer/timer.c
 
-BL1_SOURCES		+=	drivers/delay_timer/delay_timer.c		\
-				drivers/io/io_block.c				\
+BL1_SOURCES		+=	drivers/io/io_block.c				\
 				drivers/io/io_fip.c				\
 				drivers/io/io_storage.c				\
 				plat/common/aarch64/platform_up_stack.S		\
 				${SD_PLAT_COM}/sd_bl1_setup.c			\
 				${SD_PLAT_COM}/sd_io_storage.c			\
-				${SD_PLAT_COM}/drivers/timer/timer.c		\
 				${SD_PLAT_COM}/sd_smp.c				\
 				${SD_PLAT_COM}/sd_pinshare.c
 
-BL2_SOURCES		+=	drivers/delay_timer/delay_timer.c		\
-				drivers/io/io_block.c				\
+BL2_SOURCES		+=	drivers/io/io_block.c				\
 				drivers/io/io_fip.c				\
 				drivers/io/io_storage.c				\
 				plat/common/aarch64/platform_up_stack.S		\
 				${SD_PLAT_COM}/sd_bl2_setup.c			\
 				${SD_PLAT_COM}/sd_io_storage.c			\
-				${SD_PLAT_COM}/drivers/timer/timer.c		\
 				${SD_PLAT_COM}/sd_pinshare.c
 
 SD_GIC_SOURCES		:=	drivers/arm/gic/common/gic_common.c		\
@@ -99,8 +97,7 @@ SD_GIC_SOURCES		:=	drivers/arm/gic/common/gic_common.c		\
 				plat/common/plat_gicv3.c			\
 				${SD_PLAT_COM}/sd_gicv3.c
 
-BL31_SOURCES		+=	drivers/delay_timer/delay_timer.c		\
-				plat/common/aarch64/platform_mp_stack.S		\
+BL31_SOURCES		+=	plat/common/aarch64/platform_mp_stack.S		\
 				plat/common/plat_psci_common.c			\
 				${SD_PLAT_COM}/sd_bl31_setup.c			\
 				${SD_PLAT_COM}/sd_pm.c				\
