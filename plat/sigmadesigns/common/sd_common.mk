@@ -103,6 +103,10 @@ BL31_SOURCES		+=	plat/common/aarch64/platform_mp_stack.S		\
 				${SD_PLAT_COM}/sd_pm.c				\
 				${SD_PLAT_COM}/sd_topology.c			\
 				${SD_PLAT_COM}/sd_smp.c				\
+				${SD_PLAT_COM}/services/sip/sd_sip_svc.c	\
+				${SD_PLAT_COM}/services/sip/sd_sip_misc.c	\
+				${SD_PLAT_COM}/services/sip/sd_sip_mmio.c	\
+				${SD_PLAT_COM}/services/sip/sd_sip_otp.c	\
 				${SD_GIC_SOURCES}
 
 ifneq (${TRUSTED_BOARD_BOOT},0)

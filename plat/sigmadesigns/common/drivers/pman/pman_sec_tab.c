@@ -556,6 +556,7 @@ static int pman_deploy_table(const struct ptbl_hdr *tbl)
 
 		for_each_sec_region_of_group_from_pos(grp, j, pos) {
 			if (!pman_sec_region_is_valid(grp, j)) {
+				putchar('P');
 				PTAB_REGION_SET(PTAB_REGION(tbl, i), j);
 				pos = j + 1;	/*next*/
 				break;
@@ -567,42 +568,42 @@ static int pman_deploy_table(const struct ptbl_hdr *tbl)
 			continue;
 		}
 	}
+	puts("ADAD\n");
 	return 0;
 }
 
-static int pman_sec_setup(const uintptr_t tpa, const int32_t len)
+static int pman_sec_setup(const uintptr_t tva, const size_t len)
 {
-	int ret = PMAN_ERROR;
+	int ret = PMAN_E_ERROR;
 	struct pman_mem_range mrange;
 	struct pman_region_desc rgns[SD_PMAN_NR_RGNS];
 	const uint32_t total = ARRAY_SIZE(rgns);
 	uint32_t num;
 
 	/*any pass-in security settings?*/
-	if (tpa != 0 && len != 0) {
+	if (tva != 0 && len != 0) {
 #define PTAB_HANDLE_ERROR(...) do {			\
 		trace_error(__VA_ARGS__);		\
-		ret = PMAN_ERROR;			\
+		ret = PMAN_E_ERROR;			\
 		if (tbl != NULL) {			\
 			tbl = NULL;			\
 		}					\
 		goto OUT;				\
 }while(0)
 		struct ptab_rgn_statistics stat;
-		struct ptbl_hdr *tbl = NULL;
-		trace_dbg("get tbl, pa: 0x%lx, length:0x%x\n", tpa, len);
+		struct ptbl_hdr *tbl = (struct ptbl_hdr*)tva;
+		trace_dbg("get tbl, va: %p, length:0x%zx\n", (void*)tbl, len);
 		/*
 		 * Validate input parameters.
 		 */
-		if (tpa == 0 || len < sizeof(struct ptbl_hdr)) {
-			return PMAN_INVAL;
+		if (tbl == NULL || len < sizeof(struct ptbl_hdr)) {
+			return PMAN_E_INVAL;
 		}
 
-		tbl = (struct ptbl_hdr *)tpa;	/* atf uses idmap */
 		PTAB_HDR_TRACE(tbl,"");
 		/*Validate pman table*/
 		if (strncmp(tbl->magic, PTAB_MAGIC, strlen(PTAB_MAGIC)) ||
-			tbl->tlen > len ||
+			PTAB_LENGTH(tbl) > len ||
 			!PTAB_VALIDATE_CHECKSUM(tbl)) {
 			PTAB_HANDLE_ERROR("invalid PST!\n");
 		}
@@ -675,7 +676,7 @@ static int pman_sec_setup(const uintptr_t tpa, const int32_t len)
 		/*unmap*/
 		tbl = NULL;
 #undef PTAB_HANDLE_ERROR
-		ret = PMAN_OK;
+		ret = PMAN_E_OK;
 	} /*if (ta != 0)*/
 
 OUT:
@@ -684,11 +685,11 @@ OUT:
 
 int pman_set_protections(void)
 {
-	uintptr_t tpa;
-	uint32_t sz;
-	tpa = (uintptr_t)pman_table;
+	uintptr_t tva;
+	size_t sz;
+	tva = (uintptr_t)pman_table;
 	sz = ARRAY_SIZE(pman_table);
-	return pman_sec_setup(tpa, sz);
+	return pman_sec_setup(tva, sz);
 }
 
 #ifndef WITH_PROD
@@ -708,26 +709,26 @@ int pman_drop_protections(void)
 	if (num == 1 && rgns[0].score == RGN_SCORE_BEST) {
 		/*open secmem to NS world*/
 		DESC2SECRGN(&rgns[0])->region_sec_access |= PMAN_RGN_SEC_ARM_NS;
-		return PMAN_OK;
+		return PMAN_E_OK;
 	} else {
 		trace_dbg("failed: wrong region allocation for sec memory!\n"); /*shall not happen*/
-		return PMAN_ERROR;
+		return PMAN_E_ERROR;
 	}
 }
+#endif
 
 /*
  * update pman security
  * give a chance to update pman protection settings from outside (deprecated)
- * <sz> bytes settings data shall be loaded to memory pointed by <tpa>
+ * <sz> bytes settings data shall be loaded to memory pointed by <tva>
  */
-int pman_update_protections(const uint32_t tpa, const uint32_t sz)
+int pman_update_protections(const uintptr_t tva, const size_t sz)
 {
-	if (tpa == 0 || sz == 0)
-		return PMAN_INVAL;
+	if (tva == 0 || sz == 0)
+		return PMAN_E_INVAL;
 	else
-		return pman_sec_setup(tpa, sz);
+		return pman_sec_setup(tva, sz);
 }
-#endif
 
 /*
  * determine pman sec groups of specified memory block
@@ -741,7 +742,7 @@ int pman_update_protections(const uint32_t tpa, const uint32_t sz)
  * 	0	- none matched pman group.
  * 	<0	- error (-1: small buffer).
  */
-int pman_get_group(const uint32_t pa, const uint32_t sz, uint32_t grps[], const uint32_t ng)
+int pman_get_group(const uintptr_t pa, const size_t sz, uint32_t grps[], const uint32_t ng)
 {
 	int i, nb = 0, cnt = 0;
 	ddr_block_t blobs[SD_PMAN_NR_GRPS];
@@ -770,7 +771,7 @@ int pman_get_group(const uint32_t pa, const uint32_t sz, uint32_t grps[], const 
  *	bit[4]	- 1: ns executable,       0: non-secure non-executable
  *	others	- reserved, should be RAZ
  */
-int pman_get_access_state(const uint32_t pa, const uint32_t sz)
+int pman_get_access_state(const paddr_t pa, const size_t sz)
 {
 	struct pman_mem_range mrange;
 	struct pman_region_desc rgns[SD_PMAN_NR_RGNS];
@@ -801,7 +802,7 @@ int pman_get_access_state(const uint32_t pa, const uint32_t sz)
 		}
 	} else if (num < 0){
 		//NOK
-		trace_error("fail to match region [%x, %x)!\n", pa, pa + sz);
+		trace_error("fail to match region [%lx, %lx)!\n", pa, pa + sz);
 	}
 
 	num = sd_soc_get_ddr_layout(blobs, ARRAY_SIZE(blobs));
@@ -810,7 +811,7 @@ int pman_get_access_state(const uint32_t pa, const uint32_t sz)
 		    ((pa + sz) > blobs[i].start && (pa + sz) <= blobs[i].end)) &&
 		    pman_sec_match_default_region(pa, pa + sz, i, 0)) {
 			//fallback to the default region
-			trace_dbg("fall back to pman%d default region [%x,%x)\n", i, pa, pa+sz);
+			trace_dbg("fall back to pman%d default region [%lx,%lx)\n", i, pa, pa + sz);
 			if (pman_sec_dft_read_is_secure(i) &&
 			    pman_sec_dft_write_is_secure(i))
 				state |= MEM_STATE_S_RW;

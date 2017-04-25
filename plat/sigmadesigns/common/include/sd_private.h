@@ -35,6 +35,7 @@
 #include <psci.h>
 #include <sd_flash.h>
 #include <sd_mcu_comm.h>
+#include <sd_sip_svc.h>	/* MEM_STATE_XXX */
 
 #define SYS_NOERROR	0
 #define SYS_FAIL	1
@@ -42,7 +43,16 @@
 #define SD_BOOT_NORMAL	0
 #define SD_BOOT_RESUME	1
 
+#ifndef FALSE
+# define FALSE		0
+#endif
+#ifndef TRUE
+# define TRUE		!FALSE
+#endif
+
 #ifndef __ASSEMBLY__
+
+typedef unsigned long paddr_t;
 
 #define SD_MAX(x, y) ((x) > (y) ? (x) : (y))
 #define SD_MIN(x, y) ((x) < (y) ? (x) : (y))
@@ -72,6 +82,21 @@ void sd_setup_page_tables(uintptr_t total_base, size_t total_size,
 			  , uintptr_t coh_start, uintptr_t coh_limit
 #endif
 			  );
+
+/* memory attributes */
+enum {
+	MEM_SEC = 0,
+	MEM_NS,
+	MEM_SRAM,
+	MEM_FW,
+	MEM_IO,
+};
+int sd_pbuf_is(const uint32_t attr, const paddr_t pa, const size_t len);
+
+void* sd_phys_to_virt(const paddr_t pa);
+
+#define ALIGNMENT_IS_OK(p, type)	\
+	(((uintptr_t)(p) & (__alignof__(type) - 1)) == 0)
 
 int sd_soc_pinshare_init_for_mmc(int id);
 int32_t sd_soc_validate_power_state(unsigned int power_state,
@@ -142,23 +167,26 @@ typedef struct _ddr_block {
 int sd_soc_get_ddr_layout(ddr_block_t blobs[], int nb);
 
 /*
+ * PMAN calls error code
+ */
+enum {
+	PMAN_E_OK = 0,
+	PMAN_E_ERROR = -1,
+	PMAN_E_INVAL = -2,
+	PMAN_E_NOT_SUPPORT = -3,
+};
+/*
  * update pman security
  * give a chance to update pman protection settings from outside (deprecated)
  * <sz> bytes settings data shall be loaded to memory pointed by <tpa>
  * input params:
- * 	tpa	- physical address loaded with pman secure table, inclusive
+ * 	tva	- virtual address loaded with pman secure table, inclusive
  * 	sz	- pman secure table length, exclusive
  * return value:
  *	PMAN_OK on success. Otherwise error code.
  */
-int sd_pman_update_protections(const uint32_t tga, const uint32_t sz);
+int sd_pman_update_protections(const uintptr_t tva, const size_t sz);
 
-#define MEM_STATE_MASK		0x1f	/* mask */
-#define MEM_STATE_S_RW		1	/* secure r/w mem */
-#define MEM_STATE_NS_RD		(1<<1)	/* non-secure readable mem */
-#define MEM_STATE_NS_WR		(1<<2)	/* non-secure writable mem */
-#define MEM_STATE_S_EXEC	(1<<3)	/* secure executable */
-#define MEM_STATE_NS_EXEC	(1<<4)	/* non-secure executable */
 /*
  * check access state of specified memory range [pa, pa+sz)
  * input params:
@@ -172,7 +200,7 @@ int sd_pman_update_protections(const uint32_t tga, const uint32_t sz);
  *	bit[4]	- 1: ns executable,       0: non-secure non-executable
  *	others	- reserved, should be RAZ
  */
-int sd_pman_get_access_state(const uint32_t pa, const uint32_t sz);
+int sd_pman_get_access_state(const paddr_t pa, const size_t sz);
 
 /*
  * Board configure

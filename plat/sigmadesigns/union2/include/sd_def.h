@@ -96,6 +96,7 @@
 
 #define SD_ROM_BASE			0xFFFF0000
 #define SD_ROM_SIZE			0x00010000
+#define SD_ROM_KEY_BASE			(SD_ROM_BASE + 0xF000)	/*+60k*/
 
 #define STORAGE_IMG_BASE		0
 #define SD_FIP_BASE			(STORAGE_IMG_BASE + (2 << 20))

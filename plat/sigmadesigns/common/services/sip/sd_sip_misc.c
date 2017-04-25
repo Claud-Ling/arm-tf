@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2017, ARM Limited and Contributors. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -27,31 +27,50 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-
 #include <bl_common.h>
-#include <platform_def.h>
+#include <assert.h>
+#include <mmio.h>
+#include <debug.h>
 #include <sd_private.h>
 #include <sd_otp.h>
 
-/******************************************************************************
- * The following functions are defined as weak to allow a platform to override
- *****************************************************************************/
-#pragma weak sd_soc_set_protections
-
-void sd_soc_set_protections(void)
+int sd_sip_set_pst(const paddr_t pa, const size_t len)
 {
+	int ret;
+	void *va = NULL;
+	/* sanity check the input address */
+	if (!sd_pbuf_is(MEM_NS, pa, len) ||
+	    !ALIGNMENT_IS_OK(pa, uint32_t) ||
+	    !(va = sd_phys_to_virt(pa))) {
+		ERROR("Bad address %lx\n", pa);
+		return SD_SIP_E_INVALID_RANGE;
+	}
+
+	if (!sd_is_board_secured()) {
+		/* service only in case of non-secured boards */
+		ret = sd_pman_update_protections((uintptr_t)va, len);
+		if (PMAN_E_OK == ret)
+			ret = SD_SIP_E_SUCCESS;
+		else if (PMAN_E_INVAL == ret)
+			ret = SD_SIP_E_INVALID_PARAM;
+		else if (PMAN_E_NOT_SUPPORT == ret)
+			ret = SD_SIP_E_NOT_SUPPORTED;
+		else
+			ret = SD_SIP_E_FAIL;
+	} else {
+		ret = SD_SIP_E_NOT_SUPPORTED;
+	}
+	return ret;
 }
 
-/*
- * We assume that all security programming is done by the primary core.
- * NOP by default.
- */
-void plat_sd_security_setup(void)
+int sd_sip_get_access_state(const paddr_t pa, const size_t len, uint32_t * const pout)
 {
-	sd_pman_set_protections();
-	sd_soc_set_protections();
-	/* put bus protection on in case of secured board */
-	if (sd_is_board_secured()) {
-		sd_dcsn_set_protections();
+	int ret;
+	ret = sd_pman_get_access_state(pa, len);
+	if (ret != 0) {
+		*pout = ret;
+		return SD_SIP_E_SUCCESS;
+	} else {
+		return SD_SIP_E_INVALID_PARAM;
 	}
 }

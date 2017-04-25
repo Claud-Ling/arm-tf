@@ -37,6 +37,7 @@
 #include <platform.h>
 #include <platform_def.h>
 #include <xlat_tables.h>
+#include <sd_private.h>
 
 #define MAP_SEC_DRAM	MAP_REGION_FLAT(SD_SEC_DRAM_BASE,		\
 					SD_SEC_DRAM_SIZE,		\
@@ -88,8 +89,10 @@ static const mmap_region_t sd_mmap[] = {
 #if IMAGE_BL31
 static const mmap_region_t sd_mmap[] = {
 	MAP_SEC_DRAM,
+	MAP_NS_DRAM,
 	MAP_DEVICE,
 	MAP_SRAM,
+	MAP_ROM,
 	{0}
 };
 #endif
@@ -201,4 +204,77 @@ unsigned int plat_get_syscnt_freq2(void)
 	 */
 	return 24000000;
 #endif
+}
+
+int is_buffer_inside(const uintptr_t b, const size_t bl, const uintptr_t a, const size_t al)
+{
+	if ((b - 1 + bl) < b || (a - 1 + al) < a)
+		return FALSE;
+
+	if (!bl || !al )
+		return FALSE;
+
+	if (b >= a && (b - 1 + bl) <= (a - 1 + al))
+		return TRUE;
+	else
+		return FALSE;
+}
+
+int is_buffer_outside(const uintptr_t b, const size_t bl, const uintptr_t a, const size_t al)
+{
+	if ((b - 1 + bl) < b || (a - 1 + al) < a)
+		return FALSE;
+
+	if (!bl || !al )
+		return FALSE;
+
+	if ((b + bl) <= a || b >= (a + al))
+		return TRUE;
+	else
+		return FALSE;
+}
+
+/*
+ * attr (MEM_SEC, MEM_NS, MEM_SRAM, MEM_FW, MEM_IO)
+ */
+int sd_pbuf_is(const uint32_t attr, const paddr_t pa, const size_t len)
+{
+	/* Empty buffers complies with anything */
+	if (!len)
+		return TRUE;
+
+	switch (attr) {
+	case MEM_SEC:
+		return is_buffer_inside(pa, len, SD_SEC_DRAM_BASE, SD_SEC_DRAM_SIZE);
+	case MEM_NS:
+		return is_buffer_inside(pa, len, SD_NS_DRAM_BASE, SD_NS_DRAM_SIZE) ||
+		       is_buffer_inside(pa, len, SD_NS_DRAM_BASE2, SD_NS_DRAM_SIZE2);
+#if IMAGE_BL31
+	case MEM_FW:
+		return is_buffer_inside(pa, len, BL31_BASE, BL31_LIMIT - BL31_BASE);
+#endif
+	case MEM_IO:
+		return is_buffer_inside(pa, len, SD_DEVICE_BASE, SD_DEVICE_SIZE);
+	case MEM_SRAM:
+		return is_buffer_inside(pa, len, SD_SRAM_BASE, SD_SRAM_SIZE);
+	default:
+		return FALSE;
+	}
+}
+
+void* sd_phys_to_virt(const paddr_t pa)
+{
+	const mmap_region_t *mrgn;
+
+	if (pa == 0)
+		return NULL;
+
+	mrgn = sd_soc_get_mmap();
+	while(mrgn->size) {
+		if (is_buffer_inside(pa, 1, mrgn->base_pa, mrgn->size)) {
+			return (void*)(mrgn->base_va - mrgn->base_pa + pa);
+		}
+		mrgn++;
+	}
+	return NULL;
 }

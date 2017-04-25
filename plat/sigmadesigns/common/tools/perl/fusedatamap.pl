@@ -90,9 +90,31 @@ for ($i = 0; $i < $total; $i++) {
   }
 }
 
+print "\n";
+for ($i = 0; $i < $total; $i++) {
+  printf ("#define FUSE_OFS_%s %d\n", uc($name[$i]), $offset[$i]);
+}
+
 print <<END;
 
 #ifndef __ASSEMBLY__
+
+struct fuse_data {
+	uint32_t ofs;
+	uint32_t len;
+};
+
+static __attribute__((unused)) struct fuse_data fuse_datas[] = {
+END
+
+for ($i = 0; $i < $total; $i++) {
+  if ($width[$i] > 4) {
+    printf ("{%d, %d},\n", $offset[$i], $width[$i]);
+  }
+}
+
+print <<END;
+};
 
 struct ${fn} {
 END

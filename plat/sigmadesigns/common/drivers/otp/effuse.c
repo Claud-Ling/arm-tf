@@ -3,6 +3,7 @@
 #include <mmio.h>
 #include <platform_def.h>
 #include <sd_private.h>
+#include <sd_otp.h>
 
 #ifdef SD_OTP_FUSE_BASE
 # define FC_BASE		SD_OTP_FUSE_BASE
@@ -39,12 +40,15 @@
 				} while(0)
 
 /**
- * sd_read_fuse: read fuse data from data-addr register
- * @param offset:	offset from fuse start
- * @param is_quad:	0 - one word to be read out; 1 - 4 words to be read out
- * @param out:		output buffer
+ * @fn sd_read_fuse
+ * @brief read fuse data and/or protections
+ * @param[in]	offset	offset from fuse start
+ * @param[in]	len	number of fuse words to be read, must be 1 or 4.
+ * @param[out]	buf	buffer to load fuse data on return, set to NULL to ignore
+ * @param[out]	pprot	buffer to load protection on return, set to NULL to ignore
+ * @return	0 on success, or error code otherwise.
  */
-int sd_read_fuse(unsigned int offset, unsigned int is_quad, unsigned int *out)
+int sd_read_fuse(const unsigned int offset, const int len, unsigned int *buf, unsigned int *pprot)
 {
 	int addr_reg;
 	int temp;
@@ -62,7 +66,15 @@ int sd_read_fuse(unsigned int offset, unsigned int is_quad, unsigned int *out)
 			IO_WRITE_WORD(FC_READ_ADDR_REG, addr_reg);
 			temp = IO_READ_WORD(FC_READ_STATUS_REG);
 			// exit if IO_READ_WORD had an error and return temp
-			if (temp & 0x000000A0)
+			// bit 9: ECC were zero
+			// bit 8: internal error, read aborted
+			// bit 7: data corrupted or blank ECC
+			// bit 6: correctable data error
+			// bit 5: invalid command
+			// bit 4: done
+			// bit 1-3: n/a
+			// bit 0: busy
+			if (temp & 0x000001A0)
 				return temp;
 		}while (!(temp&0x11));  // loop again if busy or done bits are not active
 
@@ -70,17 +82,23 @@ int sd_read_fuse(unsigned int offset, unsigned int is_quad, unsigned int *out)
 		while (!(temp&0x00000010)) {
 			temp = IO_READ_WORD(FC_READ_STATUS_REG);
 		}
-		if (temp & 0x000000A0)
+		if (temp & 0x000001A0)
 			return temp;
 
-		// copy word to data array
-		out[0] = IO_READ_WORD(FC_READ_DATA0_REG);
-		// copy three more words if performing 128-bit IO_READ_WORD
-		if (is_quad)
-		{
-			out[1] = IO_READ_WORD(FC_READ_DATA1_REG);
-			out[2] = IO_READ_WORD(FC_READ_DATA2_REG);
-			out[3] = IO_READ_WORD(FC_READ_DATA3_REG);
+		if (buf != NULL) {
+			// copy word to data array
+			buf[0] = IO_READ_WORD(FC_READ_DATA0_REG);
+			// copy three more words if performing 128-bit IO_READ_WORD
+			if (len == 4)
+			{
+				buf[1] = IO_READ_WORD(FC_READ_DATA1_REG);
+				buf[2] = IO_READ_WORD(FC_READ_DATA2_REG);
+				buf[3] = IO_READ_WORD(FC_READ_DATA3_REG);
+			}
+		}
+
+		if (pprot != NULL) {
+			*pprot = IO_READ_WORD(FC_READ_PROT_REG);
 		}
 		// check done bit one more time
 		// if it is still set then the correct data was IO_READ_WORD from the registers
@@ -91,24 +109,38 @@ int sd_read_fuse(unsigned int offset, unsigned int is_quad, unsigned int *out)
 	return 0;
 }
 
-#if 0
 #define WRITE_UNLOCK_CODE_1 0x000C0DE1
 #define WRITE_UNLOCK_CODE_2 0x000C0DE2
 #define WRITE_UNLOCK_CODE_3 0x000C0DE3
 #define WRITE_UNLOCK_CODE_4 0x000C0DE4
 
-int sd_write_fuse(unsigned int addr, unsigned int words, unsigned int extra_unlock, unsigned char *data_array)
+/**
+ * @fn sd_write_fuse
+ * @brief write fuse data and/or protection attribute
+ * @param[in]	offset	offset from fuse start
+ * @param[in]	len	number of fuse words to be read, must be 1 or 4
+ * @param[in]	buf	buffer loaded with fuse data on entry, or NULL
+ * @param[int]	prot	protection attributes
+ * @param[int]	flags	fuse write flags
+ * @return	0 on success, or error code otherwise.
+ */
+int sd_write_fuse(const unsigned int offset, const int len, const unsigned int *buf, const unsigned int prot, const unsigned int flags)
 {
 	int addr_reg;
-	int data;
 	int temp;
+	if ((flags & (OTP_FLAG_DATA | OTP_FLAG_PROT)) == 0)
+		return 0;
+	if ((flags & OTP_FLAG_DATA) && (buf == NULL))
+		return 1;
+	if (len != 1 && len != 4)
+		return 2;
+
 	// unlock the programming interface
-	temp = 1;
 	do {
 		IO_WRITE_WORD(FC_WRITE_LOCK_REG, WRITE_UNLOCK_CODE_1);
 		IO_WRITE_WORD(FC_WRITE_LOCK_REG, WRITE_UNLOCK_CODE_2);
 		// optionally provide 4 unlock codes
-		if (extra_unlock)
+		if (flags & OTP_FLAG_UNLOCK_EXT)
 		{
 			IO_WRITE_WORD(FC_WRITE_LOCK_REG, WRITE_UNLOCK_CODE_3);
 			IO_WRITE_WORD(FC_WRITE_LOCK_REG, WRITE_UNLOCK_CODE_4);
@@ -116,44 +148,57 @@ int sd_write_fuse(unsigned int addr, unsigned int words, unsigned int extra_unlo
 		// attempt to IO_WRITE_WORD data register to verify unlock was successful
 		IO_WRITE_WORD(FC_WRITE_DATA0_REG, 0x01234567);
 	}while(IO_READ_WORD(FC_WRITE_DATA0_REG) != 0x01234567);
+
 	// setup addr_reg for IO_WRITE_WORD command
 	addr_reg = 0xC2000000 | // set interlock to 0xC2
-		    0x00800000 | // set bit 23 to program data
-		    (addr & 0x0000FFFF); // set fuse offset to addr
-	// set data pointer to data array
-	data = data_array;
-	// setup first data word in register
-	IO_WRITE_WORD(FC_WRITE_DATA0_REG, data);
-	// setup three more data words if performing 128-bit IO_WRITE_WORD
-	if (words == 4) {
-		IO_WRITE_WORD(FC_WRITE_DATA1_REG, ++data);
-		IO_WRITE_WORD(FC_WRITE_DATA2_REG, ++data);
-		IO_WRITE_WORD(FC_WRITE_DATA3_REG, ++data);
+		    (offset & 0x0000FFFF); // set fuse offset to addr
+
+	if ((flags & OTP_FLAG_DATA) && buf != NULL) {
+		// set bit 23 to program data
+		addr_reg |= 1<<23;
+		// setup first data word in register
+		IO_WRITE_WORD(FC_WRITE_DATA0_REG, buf[0]);
+		// setup three more data words if performing 128-bit IO_WRITE_WORD
+		if (len == 4) {
+			IO_WRITE_WORD(FC_WRITE_DATA1_REG, buf[1]);
+			IO_WRITE_WORD(FC_WRITE_DATA2_REG, buf[2]);
+			IO_WRITE_WORD(FC_WRITE_DATA3_REG, buf[3]);
+		}
 	}
-	// wait for programming interface to be IO_READ_WORDy
-	temp = 0xC2000000;
-	while (temp != 0x00000000) {
-		temp = IO_READ_WORD(FC_WRITE_ADDR_REG);
-		temp &= 0xFF000000;
+
+	if (flags & OTP_FLAG_PROT) {
+		// set bit 22 to program protection
+		addr_reg |= 1<<22;
+		// Protect attribute
+		IO_WRITE_WORD(FC_WRITE_PROT_REG, prot);
 	}
+
+	// wait for programming interface to be ready
+	while ((IO_READ_WORD(FC_WRITE_ADDR_REG)&0xFF000000) != 0x00000000);
+
 	// execute IO_WRITE_WORD to fuse array
 	IO_WRITE_WORD(FC_WRITE_ADDR_REG, addr_reg);
 	// wait for IO_WRITE_WORDs to complete
-	temp = 0;
-	while (!temp) {
-		temp = IO_READ_WORD(FC_WRITE_STATUS_REG);
-		temp &= 0x00000010;
-	}
+	while (!((temp=IO_READ_WORD(FC_WRITE_STATUS_REG)) & 0x00000010));
 
 	// check for errors
+	// 0, if programming was successful
+	// non-zero, if there was an error
+	// bit 8: Unexpected error, program aborted;
+	// bit 7: internal programming error, programing failed;
+	// bit 6: n/a
+	// bit 5: invalid command supplied
+	// bit 4: done
+	// bit 2-3: n/a
+	// bit [1:0]: number of write commands in FIFO
 	temp = IO_READ_WORD(FC_WRITE_STATUS_REG);
-	temp &= 0x000000A0;
+	temp &= 0x000001A0;
+
 	// re-lock the programming interface
 	IO_WRITE_WORD(FC_WRITE_LOCK_REG, 0);
-	// return temp,
+	// return value
 	// 0, if programming was successful
 	// non-zero, if there was an error
 	return temp;
 }
-#endif
 

@@ -18,11 +18,6 @@
 #ifndef __PMAN_SEC_PRIVATE_H__
 #define __PMAN_SEC_PRIVATE_H__
 
-#define PMAN_OK			0
-#define PMAN_ERROR		1
-#define PMAN_INVAL		2
-#define PMAN_NOT_SUPPORT	3
-
 #ifndef __ASSEMBLY__
 
 DECLARE_PMAN_SEC_GROUPS;
@@ -37,19 +32,19 @@ int pman_set_protections(void);
  * drop pman security
  */
 int pman_drop_protections(void);
+#endif
 
 /*
  * update pman security
  * give a chance to update pman protection settings from outside (deprecated)
- * <sz> bytes settings data shall be loaded to memory pointed by <tpa>
+ * <sz> bytes settings data shall be loaded to memory pointed by <tva>
  * input params:
- * 	tpa	- physical address loaded with pman secure table, inclusive
+ * 	tva	- virtual address loaded with pman secure table, inclusive
  * 	sz	- pman secure table length, exclusive
  * return value:
  *	PMAN_OK on success. Otherwise error code.
  */
-int pman_update_protections(const uint32_t tpa, const uint32_t sz);
-#endif
+int pman_update_protections(const uintptr_t tva, const size_t sz);
 
 /*
  * determine pman sec groups of specified memory block
@@ -63,7 +58,7 @@ int pman_update_protections(const uint32_t tpa, const uint32_t sz);
  * 	0	- none matched pman group.
  * 	<0	- error (-1: small buffer).
  */
-int pman_get_group(const uint32_t pa, const uint32_t sz, uint32_t grps[], const uint32_t ng);
+int pman_get_group(const paddr_t pa, const size_t sz, uint32_t grps[], const uint32_t ng);
 
 /*
  * check access state of specified memory range [pa, pa+len)
@@ -78,7 +73,7 @@ int pman_get_group(const uint32_t pa, const uint32_t sz, uint32_t grps[], const 
  *	bit[4]	- 1: ns executable,       0: non-secure non-executable
  *	others	- reserved, should be RAZ
  */
-int pman_get_access_state(const uint32_t pa, const uint32_t sz);
+int pman_get_access_state(const paddr_t pa, const size_t sz);
 
 #endif /*!__ASSEMBLY__*/
 #endif /*__PMAN_SEC_PRIVATE_H__*/

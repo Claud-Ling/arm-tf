@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2017, ARM Limited and Contributors. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,30 +28,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <bl_common.h>
-#include <platform_def.h>
-#include <sd_private.h>
-#include <sd_otp.h>
+#ifndef __PLAT_SIP_CALLS_H__
+#define __PLAT_SIP_CALLS_H__
 
-/******************************************************************************
- * The following functions are defined as weak to allow a platform to override
- *****************************************************************************/
-#pragma weak sd_soc_set_protections
+/*******************************************************************************
+ * Plat SiP function constants
+ ******************************************************************************/
+#define SD_PLAT_SIP_NUM_CALLS	0
 
-void sd_soc_set_protections(void)
-{
-}
-
-/*
- * We assume that all security programming is done by the primary core.
- * NOP by default.
- */
-void plat_sd_security_setup(void)
-{
-	sd_pman_set_protections();
-	sd_soc_set_protections();
-	/* put bus protection on in case of secured board */
-	if (sd_is_board_secured()) {
-		sd_dcsn_set_protections();
-	}
-}
+#endif /* __PLAT_SIP_CALLS_H__ */

@@ -148,7 +148,7 @@ static inline int region_sanity_chk_helper(const struct ptbl_rgn_body* e)
 	uint32_t _start = PTAB2PHYADDR((e)->lsb.bits.start);			\
 	uint32_t _end = LOCAL_ALIGNTO((_start + (e)->size - 1), 		\
 					LOG2_PMAN_REGION_GRANULARITY);		\
-	trace_dbg("==>pman%d[%d]: 0x%x 0x%x 0x%x 0x%x\n", 			\
+	trace_flow("==>pman%d[%d]: 0x%x 0x%x 0x%x 0x%x\n", 			\
 	(e)->lsb.bits.id, i, _start, _end, (e)->sec, (e)->attr);		\
 	pman_sec_region_set((e)->lsb.bits.id,i,_start,_end,(e)->sec,(e)->attr);	\
 }while(0)
@@ -161,6 +161,11 @@ static inline int region_sanity_chk_helper(const struct ptbl_rgn_body* e)
 	REGION_SEC(e) = (sec);							\
 	REGION_ATTR(e) = (attr);						\
 }while(0)
+
+/*
+ * pman table length
+ */
+#define PTAB_LENGTH(t) ((t)->dlen + sizeof(struct ptbl_hdr))
 
 /*
  * PTAB max length
@@ -180,7 +185,7 @@ static inline int region_sanity_chk_helper(const struct ptbl_rgn_body* e)
 /*
  * i-th region body in specified pman table
  */
-#define PTAB_REGION(t, i) ((struct ptbl_rgn_body*)(t + 1) + i)
+#define PTAB_REGION(t, i) ((struct ptbl_rgn_body*)((t) + 1) + (i))
 
 /*
  * iterate all regions in table

@@ -57,7 +57,8 @@ BL2_SOURCES		+=	${SD_PLAT_SOC}/plat_pinshare.c			\
 
 BL31_SOURCES		+=	lib/cpus/aarch64/cortex_a53.S			\
 				${SD_PLAT_SOC}/plat_psci_handlers.c		\
-				${SD_PLAT_SOC}/plat_security.c
+				${SD_PLAT_SOC}/plat_security.c			\
+				${SD_PLAT_SOC}/plat_sip_calls.c
 
 #Dependencies
 ${SD_PLAT_SOC}/plat_security.c : sd-dcsnsec sd-pmansec $(BITFIELDS_DEPS_cpu)
