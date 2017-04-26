@@ -9,7 +9,7 @@ $(eval OBJ := $(1)/$(patsubst %.c,%.o,$(notdir $(2))))
 # but do not cause re-build every time a file is written.
 $(OBJ): $(2) | $(dir $(OBJ))
 	@echo "  HOSTCC  $$<"
-	$$(Q)gcc $$(CFLAGS) $$(CFLAGS_$(notdir $(OBJ))) -g -Wall -c $$< -o $$@
+	$$(Q)gcc $$(HOST_CFLAGS) $$(CFLAGS_$(notdir $(OBJ))) -g -Wall -c $$< -o $$@
 endef
 
 # HOST_MAKE_OBJS builds C source files
@@ -61,7 +61,7 @@ $(OBJS) : $(PREREQS)
 
 $(ELF) : $(OBJS)
 	@echo "  GEN     $$@"
-	$$(Q)gcc $$(CFLAGS) $(OBJS) -o $$@
+	$$(Q)gcc $$(HOST_LDFLAGS) $$(LDFLAGS_$(notdir $(ELF))) $(OBJS) -o $$@
 
 .PHONY : $(TARGET)
 $(TARGET) : $(ELF)

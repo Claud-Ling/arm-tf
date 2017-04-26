@@ -95,8 +95,14 @@ int sd_pbuf_is(const uint32_t attr, const paddr_t pa, const size_t len);
 
 void* sd_phys_to_virt(const paddr_t pa);
 
-#define ALIGNMENT_IS_OK(p, type)	\
-	(((uintptr_t)(p) & (__alignof__(type) - 1)) == 0)
+/*
+ * align must be power of two
+ */
+#define ALIGNMENT_IS_OK(p, align)	\
+	(((uintptr_t)(p) & ((align) - 1)) == 0)
+
+#define ALIGNMENT_IS_TYPE(p, type)	\
+	ALIGNMENT_IS_OK(p, __alignof__(type))
 
 int sd_soc_pinshare_init_for_mmc(int id);
 int32_t sd_soc_validate_power_state(unsigned int power_state,

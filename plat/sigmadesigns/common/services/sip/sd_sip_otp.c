@@ -46,9 +46,9 @@ static int sec_read_otp(const size_t ofs, const paddr_t pa, const size_t len, ui
 	uint32_t flen, *va = NULL;
 	/* sanity check the input address */
 	if (!sd_pbuf_is(MEM_SEC, pa, len) ||
-	    !ALIGNMENT_IS_OK(pa, uint32_t) ||
+	    !ALIGNMENT_IS_TYPE(pa, uint32_t) ||
 	    (!(va = (uint32_t*)sd_phys_to_virt(pa)) && (pa != 0))) {
-		ERROR("Bad address %lx\n", pa);
+		ERROR("%s: Bad address %lx\n", __func__, pa);
 		return SD_SIP_E_INVALID_RANGE;
 	}
 
@@ -78,9 +78,9 @@ static int ns_read_otp(const size_t ofs, const paddr_t pa, const size_t len, uin
 
 	/* sanity check the input address */
 	if (!sd_pbuf_is(MEM_NS, pa, len) ||
-	    !ALIGNMENT_IS_OK(pa, uint32_t) ||
+	    !ALIGNMENT_IS_TYPE(pa, uint32_t) ||
 	    (!(va = (uint32_t*)sd_phys_to_virt(pa)) && (pa != 0))) {
-		ERROR("Bad address %lx\n", pa);
+		ERROR("%s: Bad address %lx\n", __func__, pa);
 		return SD_SIP_E_INVALID_RANGE;
 	}
 
@@ -153,9 +153,9 @@ int sd_sip_otp_write(const size_t ofs, const paddr_t pa, const size_t len, const
 	uint32_t flen, *va = NULL;
 	/* sanity check the input address */
 	if (!sd_pbuf_is(MEM_SEC, pa, len) ||
-	    !ALIGNMENT_IS_OK(pa, uint32_t) ||
+	    !ALIGNMENT_IS_TYPE(pa, uint32_t) ||
 	    (!(va = (uint32_t*)sd_phys_to_virt(pa)) && (pa != 0))) {
-		ERROR("Bad address %lx\n", pa);
+		ERROR("%s: Bad address %lx\n", __func__, pa);
 		return SD_SIP_E_INVALID_RANGE;
 	}
 
@@ -198,9 +198,9 @@ int sd_sip_get_rsa_pub_key(const paddr_t pa, const size_t len)
 	uint32_t *va = NULL;
 	/* sanity check the input address */
 	if (!sd_pbuf_is(MEM_NS, pa, len) ||
-	    !ALIGNMENT_IS_OK(pa, uint32_t) ||
+	    !ALIGNMENT_IS_TYPE(pa, uint32_t) ||
 	    (!(va = (uint32_t*)sd_phys_to_virt(pa)) && (pa != 0))) {
-		ERROR("Bad address %lx\n", pa);
+		ERROR("%s: Bad address %lx\n", __func__, pa);
 		return SD_SIP_E_INVALID_RANGE;
 	}
 

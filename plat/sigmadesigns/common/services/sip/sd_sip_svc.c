@@ -82,10 +82,10 @@ static uint64_t sd_sip_handler(uint32_t smc_fid,
 	/* Common services */
 	switch (smc_fid) {
 	case SD_SIP_FUNC_C_MEM_STATE:
-		ret = sd_sip_get_access_state((uint32_t)x1, (uint32_t)x2, &tmp);
+		ret = sd_sip_get_access_state(reg_pair_to_paddr(x1, x2), x3, &tmp);
 		SMC_RET2(handle, ret, tmp);
 	case SD_SIP_FUNC_C_OTP_READ:
-		ret = sd_sip_otp_read(x1, x2, x3, &tmp, ns);
+		ret = sd_sip_otp_read(x1, reg_pair_to_paddr(x2, x3), x4, &tmp, ns);
 		SMC_RET2(handle, ret, tmp);
 	}
 
@@ -94,26 +94,28 @@ static uint64_t sd_sip_handler(uint32_t smc_fid,
 		/* SiP SMC service secure world's call */
 		switch (smc_fid) {
 			case SD_SIP_FUNC_S_OTP_WRITE:
-			ret = sd_sip_otp_write(x1, x2, x3, x4);
+			ret = sd_sip_otp_write(x1, reg_pair_to_paddr(x2, x3), x4,
+					       read_ctx_reg(get_gpregs_ctx(handle), CTX_GPREG_X5));
 			SMC_RET1(handle, ret);
 		}
 	} else {
 		/* SiP SMC service normal world's call */
 		switch (smc_fid) {
 		case SD_SIP_FUNC_N_SET_PST:
-			ret = sd_sip_set_pst((uint32_t)x1, (uint32_t)x2);
+			ret = sd_sip_set_pst(reg_pair_to_paddr(x1, x2), x3);
 			SMC_RET1(handle, ret);
 		case SD_SIP_FUNC_N_MMIO:
 			if (x1 & SEC_MMIO_CMD_WNR) {
-				ret = sd_sip_mmio_write(SEC_MMIO_MODE(x1), x2, x3, x4);
+				ret = sd_sip_mmio_write(SEC_MMIO_MODE(x1), reg_pair_to_paddr(x2, x3), x4,
+						        read_ctx_reg(get_gpregs_ctx(handle), CTX_GPREG_X5));
 				SMC_RET1(handle, ret);
 			} else {
 				unsigned long tmpl;
-				ret = sd_sip_mmio_read(SEC_MMIO_MODE(x1), x2, &tmpl);
+				ret = sd_sip_mmio_read(SEC_MMIO_MODE(x1), reg_pair_to_paddr(x2, x3), &tmpl);
 				SMC_RET2(handle, ret, tmpl);
 			}
 		case SD_SIP_FUNC_N_RSA_KEY:
-			ret = sd_sip_get_rsa_pub_key((paddr_t)x1, x2);
+			ret = sd_sip_get_rsa_pub_key(reg_pair_to_paddr(x1, x2), x3);
 			SMC_RET1(handle, ret);
 		}
 	}

@@ -192,16 +192,27 @@ define_write_reg(32)	/*word*/
  * return value:
  * 	SD_SIP_E_SUCCESS on success, or error code otherwise.
  */
-int sd_sip_mmio_read(const uint32_t mode, const uintptr_t pa, unsigned long * const pout)
+int sd_sip_mmio_read(const uint32_t mode, const paddr_t pa, unsigned long * const pout)
 {
 	int ret = SD_SIP_E_FAIL;
+	void *va = NULL;
+	size_t len = 1 << (mode & SEC_MMIO_MODE_MASK);
+
+	/* sanity check the input address */
+	if (!sd_pbuf_is(MEM_IO, pa, len) ||
+	    !ALIGNMENT_IS_OK(pa, len) ||
+	    !(va = sd_phys_to_virt(pa))) {
+		ERROR("%s: Bad address %lx\n", __func__, pa);
+		return SD_SIP_E_INVALID_RANGE;
+	}
+
 	assert(pout != NULL);
 	if (SEC_MMIO_MODE_BYTE == mode) {
-		ret = read_reg_uint8(pa, pout);
+		ret = read_reg_uint8((uintptr_t)va, pout);
 	} else if (SEC_MMIO_MODE_HWORD == mode) {
-		ret = read_reg_uint16(pa, pout);
+		ret = read_reg_uint16((uintptr_t)va, pout);
 	} else if (SEC_MMIO_MODE_WORD == mode) {
-		ret = read_reg_uint32(pa, pout);
+		ret = read_reg_uint32((uintptr_t)va, pout);
 	} else {
 		WARN("read_reg failed: unknown mode code (%x)\n", mode);
 		ret = SD_SIP_E_INVALID_PARAM;
@@ -219,14 +230,25 @@ int sd_sip_mmio_read(const uint32_t mode, const uintptr_t pa, unsigned long * co
  * return value: 
  *	SD_SIP_E_SUCCESS on success, or error code otherwise.
  */
-int sd_sip_mmio_write(const uint32_t mode, const uintptr_t pa, const unsigned long val, const unsigned long mask)
+int sd_sip_mmio_write(const uint32_t mode, const paddr_t pa, const unsigned long val, const unsigned long mask)
 {
+	void *va = NULL;
+	size_t len = 1 << (mode & SEC_MMIO_MODE_MASK);
+
+	/* sanity check the input address */
+	if (!sd_pbuf_is(MEM_IO, pa, len) ||
+	    !ALIGNMENT_IS_OK(pa, len) ||
+	    !(va = sd_phys_to_virt(pa))) {
+		ERROR("%s: Bad address %lx\n", __func__, pa);
+		return SD_SIP_E_INVALID_RANGE;
+	}
+
 	if (SEC_MMIO_MODE_BYTE == mode) {
-		return write_reg_uint8(pa, val, mask);
+		return write_reg_uint8((uintptr_t)va, val, mask);
 	} else if (SEC_MMIO_MODE_HWORD == mode) {
-		return write_reg_uint16(pa, val, mask);
+		return write_reg_uint16((uintptr_t)va, val, mask);
 	} else if (SEC_MMIO_MODE_WORD == mode) {
-		return write_reg_uint32(pa, val, mask);
+		return write_reg_uint32((uintptr_t)va, val, mask);
 	} else {
 		WARN("write_reg failed: unknown mode code (%x)\n", mode);
 		return SD_SIP_E_INVALID_PARAM;

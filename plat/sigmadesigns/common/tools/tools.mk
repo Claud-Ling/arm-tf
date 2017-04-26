@@ -49,6 +49,9 @@ SD_PMAN_NR_GRPS		?=	1
 SD_PMAN_NR_RGNS		?=	32
 CFLAGS_genpst.o		:=	-I${SD_PLAT_COM}/include -include ${GENPST_CONF_H}
 
+# Static link genpst
+LDFLAGS_genpst		:=	-static
+
 # tool targets list
 SD_TOOLS		:= $(GENREGTABLE) $(GENPST)
 

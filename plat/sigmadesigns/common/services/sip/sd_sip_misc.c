@@ -40,9 +40,9 @@ int sd_sip_set_pst(const paddr_t pa, const size_t len)
 	void *va = NULL;
 	/* sanity check the input address */
 	if (!sd_pbuf_is(MEM_NS, pa, len) ||
-	    !ALIGNMENT_IS_OK(pa, uint32_t) ||
+	    !ALIGNMENT_IS_TYPE(pa, uint32_t) ||
 	    !(va = sd_phys_to_virt(pa))) {
-		ERROR("Bad address %lx\n", pa);
+		ERROR("%s: Bad address %lx\n", __func__, pa);
 		return SD_SIP_E_INVALID_RANGE;
 	}
 
