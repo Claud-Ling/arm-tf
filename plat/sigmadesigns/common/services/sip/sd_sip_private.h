@@ -25,9 +25,9 @@ int sd_sip_mmio_read(const uint32_t mode, const paddr_t pa, unsigned long * cons
 
 int sd_sip_mmio_write(const uint32_t mode, const paddr_t pa, const unsigned long val, const unsigned long mask);
 
-int sd_sip_otp_read(const size_t ofs, const paddr_t pa, const size_t len, uint32_t *const pprot, const uint32_t ns);
+int sd_sip_otp_read(const size_t ofs, const paddr_t pa, uint32_t *const size, uint32_t *const pprot, const uint32_t ns);
 
-int sd_sip_otp_write(const size_t ofs, const paddr_t pa, const size_t len, const uint32_t prot);
+int sd_sip_otp_write(const size_t ofs, const paddr_t pa, uint32_t *const size, const uint32_t prot);
 
 int sd_sip_get_rsa_pub_key(const paddr_t pa, const size_t len);
 

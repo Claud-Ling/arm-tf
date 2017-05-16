@@ -40,24 +40,33 @@
 /*
  * request to read otp from secure os
  */
-static int sec_read_otp(const size_t ofs, const paddr_t pa, const size_t len, uint32_t *const pprot)
+static int sec_read_otp(const size_t ofs, const paddr_t pa, uint32_t *const size, uint32_t *const pprot)
 {
 	int ret;
 	uint32_t flen, *va = NULL;
+	/* sanity check size pointer */
+	if (NULL == size)
+		return SD_SIP_E_INVALID_PARAM;
+
 	/* sanity check the input address */
-	if (!sd_pbuf_is(MEM_SEC, pa, len) ||
-	    !ALIGNMENT_IS_TYPE(pa, uint32_t) ||
-	    (!(va = (uint32_t*)sd_phys_to_virt(pa)) && (pa != 0))) {
+	if (pa != 0 &&
+	    (!sd_pbuf_is(MEM_SEC, pa, *size) ||
+	     !ALIGNMENT_IS_TYPE(pa, uint32_t) ||
+	     !(va = (uint32_t*)sd_phys_to_virt(pa)))) {
 		ERROR("%s: Bad address %lx\n", __func__, pa);
 		return SD_SIP_E_INVALID_RANGE;
 	}
 
 	/* check buffer length */
 	flen = fuse_size(ofs);
-	if (len < flen) {
+	if (va != NULL && *size < flen) {
 		ERROR("Small buffer for otp data 0x%zx\n", ofs);
 		return SD_SIP_E_SMALL_BUFFER;
 	}
+
+	*size = flen;
+	if (NULL == va && NULL == pprot)
+		return SD_SIP_E_SUCCESS;
 
 	if (flen > 4)
 		ret = _fuse_read_data(ofs, (uintptr_t)va, flen, pprot);
@@ -70,16 +79,20 @@ static int sec_read_otp(const size_t ofs, const paddr_t pa, const size_t len, ui
 /*
  * request to read otp from non-secure world
  */
-static int ns_read_otp(const size_t ofs, const paddr_t pa, const size_t len, uint32_t *const pprot)
+static int ns_read_otp(const size_t ofs, const paddr_t pa, uint32_t *const size, uint32_t *const pprot)
 {
-	int ret;
-	uint32_t tmp, *va = NULL;
+	int ret = 0;
+	uint32_t flen, tmp, *va = NULL;
 	otp_access_ctrl_t *ns_lst;
+	/* sanity check size pointer */
+	if (NULL == size)
+		return SD_SIP_E_INVALID_PARAM;
 
 	/* sanity check the input address */
-	if (!sd_pbuf_is(MEM_NS, pa, len) ||
-	    !ALIGNMENT_IS_TYPE(pa, uint32_t) ||
-	    (!(va = (uint32_t*)sd_phys_to_virt(pa)) && (pa != 0))) {
+	if (pa != 0 &&
+	    (!sd_pbuf_is(MEM_NS, pa, *size) ||
+	     !ALIGNMENT_IS_TYPE(pa, uint32_t) ||
+	     !(va = (uint32_t*)sd_phys_to_virt(pa)))) {
 		ERROR("%s: Bad address %lx\n", __func__, pa);
 		return SD_SIP_E_INVALID_RANGE;
 	}
@@ -96,11 +109,15 @@ static int ns_read_otp(const size_t ofs, const paddr_t pa, const size_t len, uin
 
 	if (ns_lst->ofs != -1) {
 		/* check buffer length */
-		tmp = fuse_size(ofs);
-		if (len < tmp) {
+		flen = fuse_size(ofs);
+		if (va != NULL && *size < flen) {
 			ERROR("Small buffer for otp 0x%zx\n", ofs);
 			return SD_SIP_E_SMALL_BUFFER;
 		}
+
+		*size = flen;
+		if (NULL == va && NULL == pprot)
+			return SD_SIP_E_SUCCESS;
 
 		switch (ofs) {
 		case FUSE_OFS_FC_0:
@@ -109,20 +126,19 @@ static int ns_read_otp(const size_t ofs, const paddr_t pa, const size_t len, uin
 		case FUSE_OFS_FC_3:
 		case FUSE_OFS_DIE_ID_0:
 			ret = sd_read_fuse(ofs, OTP_WORD_SINGLE, &tmp, pprot);
-			if ((0 == ret)&& (va != NULL)) {
+			if (0 == ret && va != NULL) {
 				*va = tmp & ns_lst->mask;
 			}
-			ret = otp_to_sip_ret(ret);
 			break;
 		case FUSE_OFS_RSA_PUB_KEY:
-			ret = fuse_read_data(rsa_pub_key, (uintptr_t)va, len, pprot);
-			ret = otp_to_sip_ret(ret);
+			ret = fuse_read_data(rsa_pub_key, (uintptr_t)va, flen, pprot);
 			break;
 		default:
 			WARN("otp passes access check but unknown here\n");
-			ret = SD_SIP_E_FAIL;
-			break;
+			return SD_SIP_E_FAIL;
 		}
+
+		ret = otp_to_sip_ret(ret);
 	} else {
 		ret = SD_SIP_E_PERMISSION_DENY;
 	}
@@ -131,41 +147,48 @@ static int ns_read_otp(const size_t ofs, const paddr_t pa, const size_t len, uin
 
 /*
  * secure and normal accessible
- * pa != 0   - read fuse data & protection
- * pa == 0   - read protection
+ * pa != 0   - read fuse data & fuse size & protection
+ * pa == 0   - read fuse size & protection
  */
-int sd_sip_otp_read(const size_t ofs, const paddr_t pa, const size_t len, uint32_t *const pprot, const uint32_t ns)
+int sd_sip_otp_read(const size_t ofs, const paddr_t pa, uint32_t *const size, uint32_t *const pprot, const uint32_t ns)
 {
 	if (ns)
-		return ns_read_otp(ofs, pa, len, pprot);
+		return ns_read_otp(ofs, pa, size, pprot);
 	else
-		return sec_read_otp(ofs, pa, len, pprot);
+		return sec_read_otp(ofs, pa, size, pprot);
 }
 
 /*
  * secure accessible only
  * pa != 0    - write fuse data & protection
  * pa == 0    - write protection only
+ * fill fuse size in <size> on exit
  */
-int sd_sip_otp_write(const size_t ofs, const paddr_t pa, const size_t len, const uint32_t prot)
+int sd_sip_otp_write(const size_t ofs, const paddr_t pa, uint32_t *const size, const uint32_t prot)
 {
 	int ret;
 	uint32_t flen, *va = NULL;
+	/* sanity check size pointer */
+	if (NULL == size)
+		return SD_SIP_E_INVALID_PARAM;
+
 	/* sanity check the input address */
-	if (!sd_pbuf_is(MEM_SEC, pa, len) ||
-	    !ALIGNMENT_IS_TYPE(pa, uint32_t) ||
-	    (!(va = (uint32_t*)sd_phys_to_virt(pa)) && (pa != 0))) {
+	if (pa != 0 &&
+	    (!sd_pbuf_is(MEM_SEC, pa, *size) ||
+	     !ALIGNMENT_IS_TYPE(pa, uint32_t) ||
+	     !(va = (uint32_t*)sd_phys_to_virt(pa)))) {
 		ERROR("%s: Bad address %lx\n", __func__, pa);
 		return SD_SIP_E_INVALID_RANGE;
 	}
 
 	/* check buffer length */
 	flen = fuse_size(ofs);
-	if (len < flen) {
+	if (*size < flen) {
 		ERROR("Small buffer for otp data 0x%zx\n", ofs);
 		return SD_SIP_E_SMALL_BUFFER;
 	}
 
+	*size = flen;
 	if (flen > 4) {
 		ret = _fuse_write_data(ofs, (uintptr_t)va, flen, prot);
 	} else {
@@ -199,7 +222,7 @@ int sd_sip_get_rsa_pub_key(const paddr_t pa, const size_t len)
 	/* sanity check the input address */
 	if (!sd_pbuf_is(MEM_NS, pa, len) ||
 	    !ALIGNMENT_IS_TYPE(pa, uint32_t) ||
-	    (!(va = (uint32_t*)sd_phys_to_virt(pa)) && (pa != 0))) {
+	    !(va = (uint32_t*)sd_phys_to_virt(pa))) {
 		ERROR("%s: Bad address %lx\n", __func__, pa);
 		return SD_SIP_E_INVALID_RANGE;
 	}

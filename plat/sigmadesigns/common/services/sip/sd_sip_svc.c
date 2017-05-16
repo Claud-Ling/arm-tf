@@ -74,7 +74,7 @@ static uint64_t sd_sip_handler(uint32_t smc_fid,
 {
 	uint64_t ret;
 	uint32_t ns;
-	uint32_t tmp = 0;
+	uint32_t tmp = 0, len;
 
 	/* Determine which security state this SMC originated from */
 	ns = is_caller_non_secure(flags);
@@ -85,8 +85,9 @@ static uint64_t sd_sip_handler(uint32_t smc_fid,
 		ret = sd_sip_get_access_state(reg_pair_to_paddr(x1, x2), x3, &tmp);
 		SMC_RET2(handle, ret, tmp);
 	case SD_SIP_FUNC_C_OTP_READ:
-		ret = sd_sip_otp_read(x1, reg_pair_to_paddr(x2, x3), x4, &tmp, ns);
-		SMC_RET2(handle, ret, tmp);
+		len = (uint32_t)x4;
+		ret = sd_sip_otp_read(x1, reg_pair_to_paddr(x2, x3), &len, &tmp, ns);
+		SMC_RET3(handle, ret, tmp, len);
 	}
 
 	/* Secure awareness services */
@@ -94,9 +95,10 @@ static uint64_t sd_sip_handler(uint32_t smc_fid,
 		/* SiP SMC service secure world's call */
 		switch (smc_fid) {
 			case SD_SIP_FUNC_S_OTP_WRITE:
-			ret = sd_sip_otp_write(x1, reg_pair_to_paddr(x2, x3), x4,
+				len = (uint32_t)x4;
+				ret = sd_sip_otp_write(x1, reg_pair_to_paddr(x2, x3), &len,
 					       read_ctx_reg(get_gpregs_ctx(handle), CTX_GPREG_X5));
-			SMC_RET1(handle, ret);
+				SMC_RET2(handle, ret, len);
 		}
 	} else {
 		/* SiP SMC service normal world's call */
