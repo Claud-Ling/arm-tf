@@ -74,8 +74,8 @@ print <<END;
  * DO NOT EDIT!
  *
  * Must include stdint.h.
- * The most important part of the file is the struct describing the fuse registers
- * file content.
+ * The most important part of the file is the MACROs: FUSE_OFS_XX,
+ * and the struct describing the fuse registers file.
  *
  */
 
@@ -92,7 +92,7 @@ for ($i = 0; $i < $total; $i++) {
 
 print "\n";
 for ($i = 0; $i < $total; $i++) {
-  printf ("#define FUSE_OFS_%s %d\n", uc($name[$i]), $offset[$i]);
+  printf ("#define FUSE_OFS_%s\t0x%03x\n", uc($name[$i]), $offset[$i]);
 }
 
 print <<END;
