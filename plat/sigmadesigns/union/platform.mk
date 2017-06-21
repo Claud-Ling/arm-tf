@@ -68,3 +68,8 @@ ${SD_PLAT_SOC}/plat_security.c : sd-dcsnsec sd-pmansec $(BITFIELDS_DEPS_cpu)
 ARM_GIC_ARCH		:=	3
 $(eval $(call add_define,ARM_GIC_ARCH))
 
+# Flag used by the a53 code to enable no read allocate patch.
+# For more details please refer to bug DTVUN-808
+#
+A53_PATCH_RADIS		:=	1
+$(eval $(call add_define,A53_PATCH_RADIS))

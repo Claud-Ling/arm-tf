@@ -151,6 +151,34 @@ func cortex_a53_reset_func
 	bl	a53_disable_non_temporal_hint
 #endif
 
+/*
+ * It's required to disable read allocate mode to improve an fatal memory
+ * coherency issue observed on UNION1 project.
+ * Notes:
+ * a. the memory coherency issue is due to essential coherency competences
+ *    are missing in inter-connects;
+ * b. issue couldn't be fully worked around by disabling read allocate mode;
+ * c. alert: performance penalty is foreseen as the tradeoff;
+ * d. as for now, this patch is supposedly needed on UNION1 only.
+ *
+ * Please refer to bug DTVUN-808 for more details
+ */
+#ifdef A53_PATCH_RADIS
+	/* ---------------------------------------------
+	 * Disable read allocate mode (debug only)
+	 * ---------------------------------------------
+	 */
+#define CPUACTLR_L1RADIS_SHIFT		25
+#define CPUACTLR_L1RADIS_MASK		(0x3 << CPUACTLR_L1RADIS_SHIFT)
+
+#define CPUACTLR_RADIS_SHIFT		27
+#define CPUACTLR_RADIS_MASK		(0x3 << CPUACTLR_RADIS_SHIFT)
+	mrs	x0, CPUACTLR_EL1
+	orr	x0, x0, #(CPUACTLR_L1RADIS_MASK | CPUACTLR_RADIS_MASK)
+	msr	CPUACTLR_EL1, x0
+	isb
+#endif
+
 	/* ---------------------------------------------
 	 * Enable the SMP bit.
 	 * ---------------------------------------------
