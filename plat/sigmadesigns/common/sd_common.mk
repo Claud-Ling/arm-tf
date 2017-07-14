@@ -218,6 +218,9 @@ BL1_SOURCES		+=	${SD_OTP_SOURCES}
 BL2_SOURCES		+=	${SD_OTP_SOURCES}
 BL31_SOURCES		+=	${SD_OTP_SOURCES}
 
+# Proceed turing stuffs
+include ${SD_PLAT_COM}/drivers/turing/turing.mk
+
 # Proceed SCP stuffs
 include ${SD_PLAT_COM}/drivers/mcu/mcu.mk
 BL31_SOURCES		+=	${SD_MCU_COMM_SOURCES}

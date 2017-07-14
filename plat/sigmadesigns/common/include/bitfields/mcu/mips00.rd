@@ -6,7 +6,7 @@
 #
 # Syntax:
 # Configure line, optional
-# <key> <val> [comments]
+# $<key> <val> [comments]
 #
 # where,
 #   <key>      specifies key name.
@@ -35,7 +35,7 @@
 #
 
 # register type
-type		b #8-bit register
+$type		b #8-bit register
 
 # bitfields
 mips_rstn_8051	 0 1 #mips reset 8051, low active

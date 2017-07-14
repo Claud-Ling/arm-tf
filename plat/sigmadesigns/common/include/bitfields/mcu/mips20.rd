@@ -6,11 +6,12 @@
 #
 # Syntax:
 # Configure line, optional
-# <key> <val> [comments]
+# $<key> <val> [comments]
 #
 # where,
 #   <key>      specifies key name.
-#              for now it can only be string of: "type"
+#              for now it can only be string of:
+#                  "type"      - specify register type, default 32-bit
 #   <val>      specifies value for the specified key.
 #              when <key> = "type", the allowed values and their meaning are:
 #                  'b' or 'B'  - byte (8-bit)
@@ -34,7 +35,7 @@
 #
 
 # register type
-type		b #8-bit register
+$type		b #8-bit register
 
 # bitfields
 reg_start	0 1 #0:first power on in mode A; 1:not first power on in mode A

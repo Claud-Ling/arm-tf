@@ -6,7 +6,7 @@
 #
 # Syntax:
 # Configure line, optional
-# <key> <val> [comments]
+# $<key> <val> [comments]
 #
 # where,
 #   <key>      specifies key name.

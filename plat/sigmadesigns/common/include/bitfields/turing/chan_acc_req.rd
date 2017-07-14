@@ -13,7 +13,7 @@
 #              for now it can only be string of:
 #                  "type"      - specify register type, default 32-bit
 #   <val>      specifies value for the specified key.
-#              when <key> = "type", allowed value and its meaning are:
+#              when <key> = "type", the allowed values and their meaning are:
 #                  'b' or 'B'  - byte (8-bit)
 #                  'h' or 'H'  - halfword (16-bit)
 #                  'w' or 'W'  - word (32-bit)
@@ -23,7 +23,7 @@
 # <name>  <start>  <bits> [comments]
 #
 # where,
-#   <name>     specifies bit field name derived from Fuse_Data_Map.xlsx
+#   <name>     specifies bit field name
 #   <start>    specifies the start bit
 #   <bits>     specifies number of bits
 #   [comments] comments, optional
@@ -31,6 +31,13 @@
 # Note, <start> and <bits> shall be given in decimal form
 #
 # Author:  Tony He
-# Date:    2016/11/25
+# Date:    2017/06/15
 #
 
+#
+# Channel Access Request Register
+#
+# bitfields
+key_ch		 0  1	#Key channel
+bulk_slave	 5  1	#Bulk channel for slave mode
+bulk_dma	 6  1	#Bulk channel for DMA

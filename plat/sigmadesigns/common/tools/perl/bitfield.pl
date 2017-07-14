@@ -44,7 +44,7 @@ while ($l0=<F>) {
   }
 
   # support configure line: type b|B|h|H|w|W|q|Q
-  if ($l0 =~ /^type\s*(.*)/) {
+  if ($l0 =~ /^\$type\s*(.*)/) {
     $nbits = 0;
     $nbits = 8  if ($1 =~ /\b[bB]\b\s*(.*)/);
     $nbits = 16 if ($1 =~ /\b[hH]\b\s*(.*)/);
@@ -89,10 +89,9 @@ END
 
 for ($i = ${nbits}-1; $i >= 0; $i--) {
   if (exists $width[$i]) {
-    print <<END;
-#define ${reg}_$name[$i]_SHIFT $i /* $rw[$i] */
-#define ${reg}_$name[$i]_WIDTH $width[$i]
-END
+    print "#define ${reg}_$name[$i]_SHIFT $i /* $rw[$i] */\n" if ($rw[$i]);
+    print "#define ${reg}_$name[$i]_SHIFT $i\n" unless ($rw[$i]);
+    print "#define ${reg}_$name[$i]_WIDTH $width[$i]\n";
   }
 }
 
@@ -112,7 +111,8 @@ for ($i = 0; $i < $nbits; $i++) {
     die "? overlap `$name[$i]' in $reg" if ($previ > $i);
     my $hole=$i-$previ;
     print "                                                hole$i: $hole,\n" unless ($hole==0);
-    print "                $name[$i]: $width[$i]  /* $rw[$i] */";
+    print "                $name[$i]: $width[$i]  /* $rw[$i] */" if ($rw[$i]);
+    print "                $name[$i]: $width[$i]" unless ($rw[$i]);
 
     $previ=$i+$width[$i];
   }

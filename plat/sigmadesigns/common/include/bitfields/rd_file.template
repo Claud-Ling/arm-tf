@@ -23,7 +23,7 @@
 # <name>  <start>  <bits> [comments]
 #
 # where,
-#   <name>     specifies bit field name derived from Fuse_Data_Map.xlsx
+#   <name>     specifies bit field name
 #   <start>    specifies the start bit
 #   <bits>     specifies number of bits
 #   [comments] comments, optional
