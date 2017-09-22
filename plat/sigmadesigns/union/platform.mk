@@ -70,6 +70,7 @@ $(eval $(call add_define,ARM_GIC_ARCH))
 
 # Flag used by the a53 code to enable no read allocate patch.
 # For more details please refer to bug DTVUN-808
+# Fix confirmed on UNION1 A1
 #
-A53_PATCH_RADIS		:=	1
-$(eval $(call add_define,A53_PATCH_RADIS))
+#A53_PATCH_RADIS		:=	0
+#$(eval $(call add_define,A53_PATCH_RADIS))
